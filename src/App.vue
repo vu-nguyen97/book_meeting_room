@@ -1,60 +1,66 @@
 <template>
-  <v-app>
-    <v-app-bar
-      app
-      color="primary"
-      dark
-    >
-      <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
-
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
-      </div>
-
-      <v-spacer></v-spacer>
-
-      <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
-    </v-app-bar>
-
+  <v-app id="app">
+    <Header />
     <v-main>
-      <HelloWorld/>
+      <router-view></router-view>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld';
+import '@fortawesome/fontawesome-free/css/all.css'
+import '@fortawesome/fontawesome-free/js/all.js'
+import Login from './components/Login.vue'
+import Home from './components/Home.vue'
+import RoomList from './components/RoomList.vue'
+import Header from './components/Header.vue'
+import Vue from 'vue'
+import Vuex from 'vuex'
+import VueRouter from 'vue-router'
+
+import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue'
+Vue.use(BootstrapVue)
+Vue.use(BootstrapVueIcons)
+
+Vue.use(Vuex)
+Vue.use(VueRouter)
+
+const store = new Vuex.Store({
+  state: {
+    isAdmin: false
+  },
+  mutations: {
+    toggleAdmin(state) {
+      state.isAdmin = !state.isAdmin
+    }
+  }
+})
+
+const routes = [
+  { name: 'home', path: '/home', component: Home },
+  { name: 'room-list', path: '/room-list', component: RoomList },
+  { name: 'login', path: '/login', component: Login }
+]
+
+const router = new VueRouter({
+  routes
+})
 
 export default {
   name: 'App',
-
+  store,
+  router,
   components: {
-    HelloWorld,
+    Header
   },
-
-  data: () => ({
-    //
-  }),
-};
+  //  watch: {
+  //   $route(to, from) {
+  //     console.log('Router: to', to.path,' from' ,from.path)
+  //   }
+  // },
+}
 </script>
+
+<style lang="scss">
+  @import './scss/index.scss';
+</style>
