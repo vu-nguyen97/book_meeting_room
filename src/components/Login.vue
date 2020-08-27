@@ -25,7 +25,12 @@
           </div>
           <!-- <b-button pill variant="primary" class="u-marginTop btnLogin" @click="loginRequest">Login</b-button> -->
           <router-link :to="{ name: 'home', path:'/', params: {} }">
-            <b-button pill variant="primary" class="u-marginTop btnLogin">Login</b-button>
+            <!-- <b-button pill variant="primary" class="u-marginTop btnLogin">Login</b-button> -->
+            <v-btn
+              class="mt-7 pl-14 pr-14"
+              large
+              color="primary"
+            >Login</v-btn>
           </router-link>
         </div>
       </div>

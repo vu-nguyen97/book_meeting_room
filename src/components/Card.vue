@@ -7,11 +7,11 @@
           <input type="checkbox" :checked="false">
           <div>
             <i class="fas fa-cog fa-2x"></i>
-            <b-dropdown variant="light" right class="custom-button-padding">
+            <!-- <b-dropdown variant="light" right class="custom-button-padding">
               <b-dropdown-item href="#">option</b-dropdown-item>
               <b-dropdown-item href="#">option</b-dropdown-item>
               <b-dropdown-item href="#">option</b-dropdown-item>
-            </b-dropdown>
+            </b-dropdown> -->
           </div>
         </div>
         <div>
@@ -21,7 +21,7 @@
       </div>
       <div class="Card-low">
         <div class="u-textPrimary">/mon, 16.8.19</div>
-        <b-dropdown v-if="!this.$store.state.isAdmin" split text="Options" variant="outline-primary">
+        <!-- <b-dropdown v-if="!this.$store.state.isAdmin" split text="Options" variant="outline-primary">
           <b-dropdown-item href="#">option</b-dropdown-item>
           <b-dropdown-item href="#">option</b-dropdown-item>
           <b-dropdown-item href="#">option</b-dropdown-item>
@@ -30,7 +30,7 @@
           <b-dropdown-item href="#">option</b-dropdown-item>
           <b-dropdown-item href="#">option</b-dropdown-item>
           <b-dropdown-item href="#">option</b-dropdown-item>
-        </b-dropdown>
+        </b-dropdown> -->
       </div>
     </div>
   </div>
