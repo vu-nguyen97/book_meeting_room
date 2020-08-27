@@ -1,6 +1,7 @@
 <template>
   <v-app-bar
     color="indigo lighten-3"
+    class="Header"
     app
     dark
   >
@@ -20,8 +21,6 @@
 
 <style lang="scss" scoped>
   .Header {
-    height: 6rem;
-
     &-wrapper {
       display: flex;
       justify-content: flex-end;

@@ -17,6 +17,7 @@ import Header from './components/Header.vue'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import VueRouter from 'vue-router'
+import VueMoment from 'vue-moment'
 
 import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue'
 Vue.use(BootstrapVue)
@@ -24,6 +25,7 @@ Vue.use(BootstrapVueIcons)
 
 Vue.use(Vuex)
 Vue.use(VueRouter)
+Vue.use(VueMoment)
 
 const store = new Vuex.Store({
   state: {
