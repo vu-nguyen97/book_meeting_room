@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-row>
+    <v-row class="mt-12">
       <v-col
         v-for="meeting in meetings"
         v-bind:key="meeting.id"

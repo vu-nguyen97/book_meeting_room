@@ -39,6 +39,10 @@
       &:last-child {
         margin-right: 5%;
       }
+
+      &:hover {
+        opacity: 0.8;
+      }
     }
   }
 </style>

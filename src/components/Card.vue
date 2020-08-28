@@ -3,15 +3,27 @@
     <div class="Card-coloredDiv" v-bind:style="{'background-color': color}"></div>
     <div class="Card-wrapper">
       <div class="Card-upper">
-        <div class="Card-upper-icons">
+        <div class="Card-upper-icons mb-5">
           <input type="checkbox" :checked="false">
-          <div>
+          <div class="u-flexCenter">
             <i class="fas fa-cog fa-2x"></i>
-            <!-- <b-dropdown variant="light" right class="custom-button-padding">
-              <b-dropdown-item href="#">option</b-dropdown-item>
-              <b-dropdown-item href="#">option</b-dropdown-item>
-              <b-dropdown-item href="#">option</b-dropdown-item>
-            </b-dropdown> -->
+            <v-menu offset-y>
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon
+                  v-bind="attrs"
+                  v-on="on"
+                >keyboard_arrow_down</v-icon>
+              </template>
+              <v-list>
+                <v-list-item
+                  v-for="(option, index) in options"
+                  :key="index"
+                  @click="handeClick(option)"
+                >
+                  <v-list-item-title>{{ option }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </div>
         </div>
         <div>
@@ -21,16 +33,55 @@
       </div>
       <div class="Card-low">
         <div class="u-textPrimary">/mon, 16.8.19</div>
-        <!-- <b-dropdown v-if="!this.$store.state.isAdmin" split text="Options" variant="outline-primary">
-          <b-dropdown-item href="#">option</b-dropdown-item>
-          <b-dropdown-item href="#">option</b-dropdown-item>
-          <b-dropdown-item href="#">option</b-dropdown-item>
-        </b-dropdown>
-        <b-dropdown v-if="this.$store.state.isAdmin" split text="Edit" variant="outline-primary">
-          <b-dropdown-item href="#">option</b-dropdown-item>
-          <b-dropdown-item href="#">option</b-dropdown-item>
-          <b-dropdown-item href="#">option</b-dropdown-item>
-        </b-dropdown> -->
+        <v-menu offset-y
+          v-if="!this.$store.state.isAdmin"
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="primary"
+              outlined
+              v-bind="attrs"
+              v-on="on"
+            >
+              Options
+              <v-icon class="ml-1">keyboard_arrow_down</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item
+              v-for="(option, index) in options"
+              :key="index"
+              @click="handeClick(option)"
+            >
+              <v-list-item-title>{{ option }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <v-menu offset-y
+          v-if="this.$store.state.isAdmin"
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="primary"
+              outlined
+              v-bind="attrs"
+              v-on="on"
+            >
+              Edit
+              <v-icon class="ml-1">keyboard_arrow_down</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item
+              v-for="(option, index) in options"
+              :key="index"
+              @click="handeClick(option)"
+            >
+              <v-list-item-title>{{ option }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </div>
     </div>
   </div>
@@ -45,7 +96,17 @@ export default {
       default: false
     },
     color: String
-  }, 
+  },
+  data() {
+    return {
+      options: ['option1', 'option2', 'option3']
+    }
+  },
+  methods: {
+    handeClick(option) {
+      console.log('click:', option)
+    }
+  },
 }
 </script>
 
@@ -82,9 +143,9 @@ export default {
       justify-content: space-between;
 
       &-icons {
-        margin-bottom: 0.8rem;
         display: flex;
         justify-content: space-between;
+        align-items: center;
       }
     }
 

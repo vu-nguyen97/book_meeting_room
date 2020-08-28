@@ -136,4 +136,8 @@ export default {
     color: rgb(65, 63, 63) !important;
     z-index: 1;
   }
+  
+  input[type=text] {
+    border-bottom: 1px solid #616161;
+  }
 </style>

@@ -8,6 +8,7 @@
 </template>
 
 <script>
+import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import '@fortawesome/fontawesome-free/css/all.css'
 import '@fortawesome/fontawesome-free/js/all.js'
 import Login from './components/Login.vue'
