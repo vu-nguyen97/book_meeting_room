@@ -19,15 +19,14 @@
               placeholder="Password" 
             >
           </div>
-          <div class="Login-content-loginWithAdminBtn u-marginTopXLarge">
+          <div class="u-flexCenter u-marginTopXLarge">
             <input type="checkbox" id="remember" :checked="this.$store.state.isAdmin" @click="toggleAdmin">
             <label for="remember">Login with admin</label>
           </div>
           <!-- <b-button pill variant="primary" class="u-marginTop btnLogin" @click="loginRequest">Login</b-button> -->
           <router-link :to="{ name: 'home', path:'/', params: {} }">
-            <!-- <b-button pill variant="primary" class="u-marginTop btnLogin">Login</b-button> -->
             <v-btn
-              class="mt-7 pl-14 pr-14"
+              class="mt-7 pl-16 pr-16"
               large
               color="primary"
             >Login</v-btn>
@@ -64,9 +63,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
+  $app-header-height: 64px;
   .Login {
     position: absolute;
-    top: -64px;
+    top: -$app-header-height;
     bottom: 0;
     left: 0;
     right: 0;
@@ -85,7 +85,6 @@ export default {
         bottom: 0;
         left: 0;
         right: 0;
-
       }
       &-wrapper {
         position: relative;
@@ -114,11 +113,6 @@ export default {
         }
       }
 
-      &-loginWithAdminBtn {
-        display: flex;
-        justify-content: center;
-      }
-
       .header {
         font-size: 3rem;
         font-weight: 600;
@@ -134,10 +128,26 @@ export default {
   .custom-fa {
     margin-right: -3rem;
     color: rgb(65, 63, 63) !important;
-    z-index: 1;
   }
-  
+
   input[type=text] {
+    padding-left: 4rem;
+    font-size: 1.5rem;
+    height: 3.6rem !important;
     border-bottom: 1px solid #616161;
+
+    &:focus{
+      outline: 1px solid #2c97fa;
+      border: 0;
+
+      &::placeholder {
+        font-size: 1rem;
+      }
+    }
   }
+
+  input[type=checkbox] {
+    zoom: 1.8;
+  }
+
 </style>
