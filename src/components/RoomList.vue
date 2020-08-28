@@ -155,7 +155,7 @@
       </v-col>
       <v-btn
         v-if="!isShowAddCategoriesForm"
-        class="ma-5"
+        class="mt-5 ml-3"
         fab
         small
         color="primary"
