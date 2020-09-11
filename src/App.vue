@@ -30,11 +30,15 @@ Vue.use(VueMoment)
 
 const store = new Vuex.Store({
   state: {
-    isAdmin: false
+    isAdmin: false,
+    isLogin: false
   },
   mutations: {
-    toggleAdmin(state) {
-      state.isAdmin = !state.isAdmin
+    setAdmin(state) {
+      state.isAdmin = true
+    },
+    isLoggedIn(state) {
+      state.isLogin = true
     }
   }
 })
@@ -49,6 +53,11 @@ const router = new VueRouter({
   routes
 })
 
+router.beforeResolve((to, from, next) => {
+  if (to.name !== 'login' && !store.state.isLogin) next({ name: 'login' })
+  else next()
+})
+
 export default {
   name: 'App',
   store,
@@ -56,11 +65,6 @@ export default {
   components: {
     Header
   },
-  //  watch: {
-  //   $route(to, from) {
-  //     console.log('Router: to', to.path,' from' ,from.path)
-  //   }
-  // },
 }
 </script>
 

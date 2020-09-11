@@ -17,6 +17,7 @@
 
 <script>
 import Card from './Card'
+import axios from 'axios'
 
 export default {
   name: 'Home',
@@ -60,6 +61,11 @@ export default {
         [i]: this.colors[indexOfColor]
       });
     }
+  },
+  mounted () {
+    axios.get(process.env.VUE_APP_HOST_URL)
+      .then(() => {
+      })
   },
 }
 </script>

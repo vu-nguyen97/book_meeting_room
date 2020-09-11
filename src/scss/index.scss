@@ -60,7 +60,9 @@ label {
   justify-items: center;
   align-items: center;
 }
-
+.u-flexCol {
+  flex-direction: column;
+}
 a {
   text-decoration: none !important;
 }

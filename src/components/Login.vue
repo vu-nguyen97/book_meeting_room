@@ -2,61 +2,95 @@
   <div class="Login">
     <div class="Login-layout">
       <div class="Login-layout-wrapper">
-        <div class="Login-content">
+        <form class="Login-content">
           <div class="header">Sign in</div>
 
-          <div class="Login-content-line">
-            <i class="fas fa-user fa-3x custom-fa"></i>
-            <input
-              type="text"
-              placeholder="Username" 
-            >
-          </div>
-          <div class="Login-content-line">
-            <i class="fas fa-lock fa-3x custom-fa"></i>
-            <input
-              type="text"
-              placeholder="Password" 
-            >
-          </div>
-          <div class="u-flexCenter u-marginTopXLarge">
-            <input type="checkbox" id="remember" :checked="this.$store.state.isAdmin" @click="toggleAdmin">
-            <label for="remember">Login with admin</label>
-          </div>
-          <!-- <b-button pill variant="primary" class="u-marginTop btnLogin" @click="loginRequest">Login</b-button> -->
-          <router-link :to="{ name: 'home', path:'/', params: {} }">
+          <div class="u-flexCenter u-flexCol">
+            <div class="Login-content-line">
+              <i class="fas fa-user fa-3x custom-fa"></i>
+              <input
+                v-model="email"
+                type="text"
+                placeholder="Username or email" 
+              >
+            </div>
+            <div class="Login-content-line">
+              <i class="fas fa-lock fa-3x custom-fa"></i>
+              <input
+                v-model="password"
+                type="password"
+                placeholder="Password"
+                autocomplete="on"
+              >
+            </div>
+            <div v-if="errorRequest" class="errorRequest u-width100">
+              <i class="fas fa-exclamation-circle"></i>  
+              {{errorRequest}}
+            </div>
             <v-btn
               class="mt-7 pl-16 pr-16"
               large
               color="primary"
+              @click="loginRequest"
             >Login</v-btn>
-          </router-link>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'Login',
   props: {
     msg: String,
   },
   methods: {
-    toggleAdmin() {
-      this.$store.commit('toggleAdmin');
+    loginRequest() {
+      const isEmail = this.validateEmail(this.email)
+      let fieldName = 'email'
+      if (!isEmail) {
+        fieldName = 'username'
+      }
+      axios.post(`${process.env.VUE_APP_HOST_URL}/login`, {
+        [fieldName]: this.email,
+        password: this.password
+      }).then(
+        () => {
+          this.$store.commit('isLoggedIn')
+          axios.get(`${process.env.VUE_APP_HOST_URL}/user`, {
+            params: {
+              [fieldName]: this.email
+            }
+          }).then(res => {
+            if (res.data.role_id === 0) {
+              this.$store.commit('setAdmin');
+            }
+          })
+
+          this.$router.push({ name: 'home', path: '/home', params: {isAdmin: this.$store.isAdmin } })
+        }, (err) => {
+          this.errorRequest = JSON.parse(err.request.responseText)[0].message
+      })
     },
-    // loginRequest() {
-    //   return this.$router.push({ name: 'home', path: '/home', params: {isAdmin: this.$store.isAdmin } });
-    // }
+    validateEmail(email) {
+      // eslint-disable-next-line no-useless-escape
+      const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(email);
+    }
   },
   data() {
     return {
       rules: [
-      value => !!value || 'Required.',
-      value => (value && value.length >= 3) || 'Min 3 characters',
-    ],
+        value => !!value || 'Required.',
+        value => (value && value.length >= 3) || 'Min 3 characters',
+      ],
+      errorRequest: '',
+      email: '',
+      password: ''
     }
   },
 }
@@ -125,24 +159,26 @@ export default {
     }
   }
 
+  .errorRequest {
+    color: red;
+    font-size: 0.77rem;
+  }
+
   .custom-fa {
     margin-right: -3rem;
     color: rgb(65, 63, 63) !important;
+    z-index: 1;
   }
 
-  input[type=text] {
+  input[type=text], input[type=password] {
     padding-left: 4rem;
-    font-size: 1.5rem;
+    font-size: 0.9rem;
     height: 3.6rem !important;
     border-bottom: 1px solid #616161;
 
     &:focus{
       outline: 1px solid #2c97fa;
       border: 0;
-
-      &::placeholder {
-        font-size: 1rem;
-      }
     }
   }
 
