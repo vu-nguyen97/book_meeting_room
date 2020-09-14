@@ -34,7 +34,7 @@
       <div class="Card-low">
         <div class="u-textPrimary">/mon, 16.8.19</div>
         <v-menu offset-y
-          v-if="!this.$store.state.isAdmin"
+          v-if="!isAdmin"
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -59,7 +59,7 @@
         </v-menu>
 
         <v-menu offset-y
-          v-if="this.$store.state.isAdmin"
+          v-if="isAdmin"
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -88,19 +88,30 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: 'Card',
   props: {
-    isAdmin: {
-      value: Boolean,
-      default: false
-    },
     color: String
   },
   data() {
     return {
-      options: ['option1', 'option2', 'option3']
+      options: ['option1', 'option2', 'option3'],
+      isAdmin: false
     }
+  },
+  created () {
+    const userId = this.$store.state.userId
+    axios.get(`${process.env.VUE_APP_HOST_URL}/user`, {
+      params: {
+        id: userId
+      }
+    })
+    .then((res) => {
+      if(res.data.role_id === 1) {
+        this.isAdmin = true
+      }
+    })
   },
   methods: {
     handeClick(option) {

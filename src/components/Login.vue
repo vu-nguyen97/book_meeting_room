@@ -60,18 +60,19 @@ export default {
         password: this.password
       }).then(
         () => {
-          this.$store.commit('login')
           axios.get(`${process.env.VUE_APP_HOST_URL}/user`, {
             params: {
               [fieldName]: this.email
             }
-          }).then(res => {
-            if (res.data.role_id === 0) {
-              this.$store.commit('setAdmin');
-            }
+          })
+          .then(res => {
+            const userId = res.data.id
+            this.$store.commit('login', userId)
+          })
+          .then(() => {
+            this.$router.push({ name: 'home', path: '/home' })
           })
 
-          this.$router.push({ name: 'home', path: '/home', params: {isAdmin: this.$store.isAdmin } })
         }, (err) => {
           this.errorRequest = JSON.parse(err.request.responseText)[0].message
       })

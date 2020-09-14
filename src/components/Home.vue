@@ -42,10 +42,6 @@ export default {
       ]
     }
   },
-  props: {
-    msg: String,
-    isAdmin: Boolean
-  },
   components: {
     Card
   },

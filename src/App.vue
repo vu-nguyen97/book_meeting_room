@@ -30,18 +30,14 @@ Vue.use(VueMoment)
 
 const store = new Vuex.Store({
   state: {
-    isAdmin: false,
-    isLogin: false
+    userId: null,
   },
   mutations: {
-    setAdmin(state) {
-      state.isAdmin = true
-    },
-    login(state) {
-      state.isLogin = true
+    login(state, userId) {
+      state.userId = userId
     },
     logout(state) {
-      state.isLogin = false
+      state.userId = null
     }
   }
 })
@@ -56,8 +52,8 @@ const router = new VueRouter({
   routes
 })
 
-router.beforeResolve((to, from, next) => {
-  if (to.name !== 'login' && !store.state.isLogin) next({ name: 'login' })
+router.beforeEach((to, from, next) => {
+  if (to.name !== 'login' && !store.state.userId) next({ name: 'login' })
   else next()
 })
 
