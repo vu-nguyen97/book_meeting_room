@@ -37,8 +37,11 @@ const store = new Vuex.Store({
     setAdmin(state) {
       state.isAdmin = true
     },
-    isLoggedIn(state) {
+    login(state) {
       state.isLogin = true
+    },
+    logout(state) {
+      state.isLogin = false
     }
   }
 })

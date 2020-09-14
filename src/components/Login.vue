@@ -60,7 +60,7 @@ export default {
         password: this.password
       }).then(
         () => {
-          this.$store.commit('isLoggedIn')
+          this.$store.commit('login')
           axios.get(`${process.env.VUE_APP_HOST_URL}/user`, {
             params: {
               [fieldName]: this.email

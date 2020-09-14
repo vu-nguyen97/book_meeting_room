@@ -8,7 +8,7 @@
     <div class="Header-wrapper u-width100">
       <router-link to="/home" class="Header-link Header-link-blackColor">Home</router-link>
       <router-link to="/room-list" class="Header-link">Room list</router-link>
-      <router-link to="/login" class="Header-link Header-link-blackColor">Login</router-link>
+      <div @click="logoutRequest" class="Header-link Header-link-blackColor u-pointerCursor">Log out</div>
     </div>
   </v-app-bar>
 </template>
@@ -16,6 +16,12 @@
 <script>
   export default {
     name: 'Header',
+    methods: {
+      logoutRequest() {
+        this.$store.commit('logout')
+        this.$router.push({ path: '/login' })
+      }
+    },
   }
 </script>
 
