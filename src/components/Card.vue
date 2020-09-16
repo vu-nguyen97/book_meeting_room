@@ -27,14 +27,14 @@
           </div>
         </div>
         <div>
-          <h4>Meeting name</h4>
-          <div>1.pm - 2.pm, 12 persons</div>
+          <h4>{{meetingName}}</h4>
+          <div>{{formatTime(startTime, 'hour')}} - {{formatTime(endTime, 'hour')}}, {{totalPersons}} persons</div>
         </div>
       </div>
       <div class="Card-low">
-        <div class="u-textPrimary">/mon, 16.8.19</div>
+        <div class="u-textPrimary">{{formatTime(meetingDate, 'day')}}</div>
         <v-menu offset-y
-          v-if="!isAdmin"
+          v-if="!isOwner"
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -59,7 +59,7 @@
         </v-menu>
 
         <v-menu offset-y
-          v-if="isAdmin"
+          v-if="isOwner"
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -88,34 +88,34 @@
 </template>
 
 <script>
-import axios from 'axios'
+import moment from 'moment'
 export default {
   name: 'Card',
   props: {
-    color: String
+    color: String,
+    startTime: String,
+    endTime: String,
+    totalPersons: Number,
+    meetingName: String,
+    meetingDate: String,
+    isOwner: Boolean
   },
   data() {
     return {
       options: ['option1', 'option2', 'option3'],
-      isAdmin: false
     }
-  },
-  created () {
-    const userId = this.$store.state.userId
-    axios.get(`${process.env.VUE_APP_HOST_URL}/user`, {
-      params: {
-        id: userId
-      }
-    })
-    .then((res) => {
-      if(res.data.role_id === 1) {
-        this.isAdmin = true
-      }
-    })
   },
   methods: {
     handeClick(option) {
       console.log('click:', option)
+    },
+    formatTime: function(time, type) {
+      if (type == 'hour') {
+        return moment(time).format('LT')
+      }
+      if (type == 'day') {
+        return moment(time).format('/ddd, DD.MM.GG')
+      }
     }
   },
 }

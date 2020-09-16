@@ -1,6 +1,11 @@
 <template>
   <v-container>
     <v-row class="mt-12">
+      <v-col v-if="meetings.length == 0"
+        class="u-textCenter"
+      >
+        You haven't meeting at the moment.
+      </v-col>
       <v-col
         v-for="meeting in meetings"
         v-bind:key="meeting.id"
@@ -9,9 +14,19 @@
         sm="6"
         xs="12"
       >
-        <card v-bind:color="colors[meeting.id]" />
+        <card
+          v-if="meetings"
+          v-bind:color="colors[meeting.id]"
+          meetingName="meeting"
+          :startTime="meeting.meeting.start_time"
+          :endTime="meeting.meeting.end_time"
+          :meetingDate="meeting.meeting.start_time"
+          :totalPersons=12
+          :isOwner="meeting.isOwner"
+        />
       </v-col>
     </v-row>
+    <div v-if="isShowSpinner" class="Spinner"></div>
   </v-container>
 </template>
 
@@ -24,47 +39,101 @@ export default {
   data: function() {
     return {
       colors: {
-        0: '#ffc211',
         1: '#51c360',
         2: '#1eebff',
         3: '#ff1515',
         4: '#6a18e2',
+        5: '#ffc211',
       },
-      meetings: [
-        { id: 0, name: 'Meeting name' },
-        { id: 1, name: 'Meeting name' },
-        { id: 2, name: 'Meeting name' },
-        { id: 3, name: 'Meeting name' },
-        { id: 4, name: 'Meeting name' },
-        { id: 5, name: 'Meeting name' },
-        { id: 6, name: 'Meeting name' },
-        { id: 7, name: 'Meeting name' },
-      ]
+      meetings: [],
+      isAdmin: false,
+      isShowSpinner: true
     }
   },
   components: {
     Card
   },
   created () {
-    const totalMeetings = this.meetings.length;
-    const totalBaseColors = Object.keys(this.colors).length;
-    if (totalMeetings <= totalBaseColors) {
-      return;
-    }
-    for (let i = totalBaseColors; i <= totalMeetings; i++) {
-      let indexOfColor = i % totalBaseColors;
-      this.colors = Object.assign({}, this.colors, {
-        [i]: this.colors[indexOfColor]
-      });
-    }
-  },
-  mounted () {
-    axios.get(process.env.VUE_APP_HOST_URL)
-      .then(() => {
+    const userId = this.$store.state.userId
+    // axios.get(`${process.env.VUE_APP_HOST_URL}/user`, {
+    //   params: {
+    //     id: userId
+    //   }
+    // })
+    // .then((res) => {
+    //   if(res.data.role_id === 1) {
+    //     this.isAdmin = true
+    //   }
+    // })
+
+    axios.get(`${process.env.VUE_APP_HOST_URL}/user/meetings`, {
+      params: {
+        id: userId
+      }
+    })
+    .then((res) => {
+      const meetings = res.data
+      meetings.forEach(meeting => {
+        const isOwner = meeting.id == userId ? true : false
+        meeting.isOwner = isOwner
       })
+      this.meetings = [...meetings]
+
+      const totalMeetings = meetings.length;
+      const totalBaseColors = Object.keys(this.colors).length;
+      if (totalMeetings > totalBaseColors) {
+        for (let i = totalBaseColors; i <= totalMeetings; i++) {
+          let indexOfColor = i % totalBaseColors;
+          this.colors = Object.assign({}, this.colors, {
+            [i]: this.colors[indexOfColor]
+          });
+        }
+      }
+
+      this.isShowSpinner = false
+    })
   },
 }
 </script>
 
 <style scoped lang="scss">
+.Spinner {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  position: absolute;
+  border: 5px solid #eee;
+  display: inline-block;
+  
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  
+  &:after, &:before {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+  
+  &:after {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    border: 5px solid transparent;
+    border-top-color: #928a8a;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  
+  100% {
+    transform: rotate(360deg);
+  }
+}
 </style>
