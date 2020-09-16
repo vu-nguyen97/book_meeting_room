@@ -7,7 +7,7 @@
         You haven't meeting at the moment.
       </v-col>
       <v-col
-        v-for="meeting in meetings"
+        v-for="(meeting, index) in meetings"
         v-bind:key="meeting.id"
         lg="3"
         md="4"
@@ -16,13 +16,9 @@
       >
         <card
           v-if="meetings"
-          v-bind:color="colors[meeting.id]"
-          meetingName="meeting"
-          :startTime="meeting.meeting.start_time"
-          :endTime="meeting.meeting.end_time"
-          :meetingDate="meeting.meeting.start_time"
-          :totalPersons=12
-          :isOwner="meeting.isOwner"
+          :color="colors[index]"
+          :meeting="meeting.meeting"
+          :isOwner="meeting.is_created_user"
         />
       </v-col>
     </v-row>
@@ -39,11 +35,11 @@ export default {
   data: function() {
     return {
       colors: {
+        0: '#ffc211',
         1: '#51c360',
         2: '#1eebff',
         3: '#ff1515',
         4: '#6a18e2',
-        5: '#ffc211',
       },
       meetings: [],
       isAdmin: false,
@@ -73,19 +69,15 @@ export default {
     })
     .then((res) => {
       const meetings = res.data
-      meetings.forEach(meeting => {
-        const isOwner = meeting.id == userId ? true : false
-        meeting.isOwner = isOwner
-      })
       this.meetings = [...meetings]
 
       const totalMeetings = meetings.length;
       const totalBaseColors = Object.keys(this.colors).length;
       if (totalMeetings > totalBaseColors) {
-        for (let i = totalBaseColors; i <= totalMeetings; i++) {
+        for (let i = totalBaseColors + 1; i <= totalMeetings; i++) {
           let indexOfColor = i % totalBaseColors;
           this.colors = Object.assign({}, this.colors, {
-            [i]: this.colors[indexOfColor]
+            [i - 1]: this.colors[indexOfColor]
           });
         }
       }

@@ -43,7 +43,6 @@
           v-model="startMenu"
           :close-on-content-click="false"
           :nudge-right="40"
-          :return-value.sync="meetingDay"
           transition="scale-transition"
           min-width="290px"
           offset-y
@@ -89,7 +88,6 @@
           ref="dialog"
           v-model="modal"
           @keydown.esc="exit"
-          :return-value.sync="startTime"
           persistent
           width="290px"
         >
@@ -117,7 +115,6 @@
         <v-dialog
           ref="dialog2"
           v-model="modal2"
-          :return-value.sync="endTime"
           persistent
           @keydown.esc="exit"
           width="290px"
@@ -205,6 +202,16 @@
 
 <script>
   import moment from 'moment'
+  import axios from 'axios'
+
+  const meetingType = {
+    0: "Meeting",
+    1: "Event",
+    2: "Birthday",
+    3: "Conference",
+    4: "Party",
+  }
+  const colors = ['blue', 'indigo', 'cyan', 'green', 'grey darken-1']
 
   export default {
     data: () => ({
@@ -219,16 +226,11 @@
       meetingDay: moment().format('YYYY-MM-DD'),
       focus: '',
       events: [],
-      colors: ['blue', 'indigo', 'cyan', 'green', 'grey darken-1'],
-      typesOfMeeting: ['Meeting', 'Event', 'Birthday', 'Conference', 'Party'],
-      categories: ['Conference room 1', 'Conference room 2', 'Conference room 3', 'Conference room 4'],
+      colors: colors,
+      typesOfMeeting: Object.values(meetingType),
+      categories: [],
+      rooms: []
     }),
-    created () {
-      // console.log('refs:',this.$refs);
-    },
-    mounted () {
-      // this.$refs.calendar.checkChange()
-    },
     computed: {
       isDisableAddMeetingBtn: function() {
         let isDisable = true
@@ -241,19 +243,28 @@
     methods: {
       onAddMeeting() {
         const indexOfTypeMeeting = this.typesOfMeeting.indexOf(this.activedType)
-        this.events.push({
-          name: this.activedType,
-          start: `${this.meetingDay}T${this.startTime}:00`,
-          end: `${this.meetingDay}T${this.endTime}:00`,
-          color: this.colors[indexOfTypeMeeting],
-          text: {
-            color: 'red'
-          },
-          category: this.selectedRoom,
+        const indexOfRoom = this.categories.indexOf(this.selectedRoom)
+        const room_id = this.rooms[indexOfRoom].id
+
+        axios.post(`${process.env.VUE_APP_HOST_URL}/meeting`, {
+          type: indexOfTypeMeeting,
+          start_time: `${this.meetingDay} ${this.startTime}:00`,
+          end_time: `${this.meetingDay} ${this.endTime}:00`,
+          room_id: room_id,
+          user_id: this.$store.state.userId
         })
-        this.startTime = null
-        this.endTime = null
-        this.selectedRoom = null
+          .then(() => {
+            this.events.push({ 
+              name: this.activedType,
+              start: `${this.meetingDay} ${this.startTime}:00`,
+              end: `${this.meetingDay} ${this.endTime}:00`,
+              color: this.colors[indexOfTypeMeeting],
+              category: this.selectedRoom,
+            })
+            this.startTime = null
+            this.endTime = null
+            this.selectedRoom = null
+          })
       },
       exit() {
         this.modal = false
@@ -267,26 +278,37 @@
       },
       // eslint-disable-next-line no-unused-vars
       fetchEvents ({ start, end }) {
-        const events = []
+        axios.get(`${process.env.VUE_APP_HOST_URL}/room-list`, {
+          params: { date: start.date }
+        })
+          .then((res) => {
+            const roomData = res.data
+            const events = []
+            const rooms = []
 
-        const first = ['2020-8-27T09:00:00','2020-8-27T10:00:00','2020-8-28T09:00:00','2020-8-27T16:00:00','2020-8-27T17:00:00']
-        const second = ['2020-8-27T11:00:00','2020-8-27T11:00:00','2020-8-28T09:30:00','2020-8-27T17:00:00','2020-8-27T17:30:00']
-        const indexOfTypeMeeting = [0, 1, 3, 2, 4]
-        const categories = [0, 2, 1, 4, 1]
-        for (let i = 0; i < 5; i++) {
-          events.push({
-            name: this.typesOfMeeting[indexOfTypeMeeting[i]],
-            start: first[i],
-            end: second[i],
-            color: this.colors[indexOfTypeMeeting[i]],
-            text: {
-              color: 'red'
-            },
-            category: this.categories[categories[i]],
+            roomData.forEach(room => {
+              rooms.push({
+                id: room.id,
+                name: room.name,
+                address: room.address
+              })
+              const { meetings } = room
+
+              meetings.forEach(meeting => {
+                events.push({
+                  name: this.typesOfMeeting[meeting.type],
+                  start: moment(meeting.start_time).format('YYYY-MM-DD HH:mm:ss'),
+                  end: moment(meeting.end_time).format('YYYY-MM-DD HH:mm:ss'),
+                  color: this.colors[meeting.type],
+                  category: room.name
+                })
+              })
+            })
+
+            this.rooms = rooms
+            this.categories = rooms.map(room => room.name)
+            this.events = events
           })
-        }
-
-        this.events = events
       },
     },
   }

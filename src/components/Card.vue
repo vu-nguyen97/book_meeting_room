@@ -27,12 +27,12 @@
           </div>
         </div>
         <div>
-          <h4>{{meetingName}}</h4>
-          <div>{{formatTime(startTime, 'hour')}} - {{formatTime(endTime, 'hour')}}, {{totalPersons}} persons</div>
+          <h4 class="mb-2">{{meetingName}}</h4>
+          <div>{{formatTime(meeting.start_time, 'hour')}} - {{formatTime(meeting.end_time, 'hour')}}, {{totalPersons}} persons</div>
         </div>
       </div>
       <div class="Card-low">
-        <div class="u-textPrimary">{{formatTime(meetingDate, 'day')}}</div>
+        <div class="u-textPrimary">{{formatTime(meeting.start_time, 'day')}}</div>
         <v-menu offset-y
           v-if="!isOwner"
         >
@@ -58,30 +58,15 @@
           </v-list>
         </v-menu>
 
-        <v-menu offset-y
+        <v-btn
           v-if="isOwner"
+          color="primary"
+          outlined
+          @click="editMeeting"
         >
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              color="primary"
-              outlined
-              v-bind="attrs"
-              v-on="on"
-            >
-              Edit
-              <v-icon class="ml-1">keyboard_arrow_down</v-icon>
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item
-              v-for="(option, index) in options"
-              :key="index"
-              @click="handeClick(option)"
-            >
-              <v-list-item-title>{{ option }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
+          Edit
+          <v-icon class="ml-1">keyboard_arrow_down</v-icon>
+        </v-btn>
       </div>
     </div>
   </div>
@@ -89,20 +74,27 @@
 
 <script>
 import moment from 'moment'
+
+const meetingType = {
+  0: "Meeting",
+  1: "Event",
+  2: "Birthday",
+  3: "Conference",
+  4: "Party",
+}
+
 export default {
   name: 'Card',
   props: {
     color: String,
-    startTime: String,
-    endTime: String,
-    totalPersons: Number,
-    meetingName: String,
-    meetingDate: String,
-    isOwner: Boolean
+    meeting: Object,
+    isOwner: Number
   },
   data() {
     return {
       options: ['option1', 'option2', 'option3'],
+      totalPersons: 12,//Fix me
+      meetingName: meetingType[this.meeting.type]
     }
   },
   methods: {
@@ -116,6 +108,15 @@ export default {
       if (type == 'day') {
         return moment(time).format('/ddd, DD.MM.GG')
       }
+    },
+    editMeeting() {
+      this.$router.push({
+        path: '/room-list',
+        name: 'room-list',
+        params: {
+          meeting: this.meeting
+        }
+      })
     }
   },
 }
