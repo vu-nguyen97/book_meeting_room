@@ -45,6 +45,7 @@ const store = new Vuex.Store({
 const routes = [
   { name: 'home', path: '/home', component: Home },
   { name: 'room-list', path: '/room-list', component: RoomList },
+  { name: 'room-list', path: '/room-list/meeting/:meeting_id', component: RoomList },
   { name: 'login', path: '/login', component: Login }
 ]
 

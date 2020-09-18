@@ -33,6 +33,13 @@
       </div>
       <div class="Card-low">
         <div class="u-textPrimary">{{formatTime(meeting.start_time, 'day')}}</div>
+        <div
+          class="u-textSmall"
+          :title="meeting.room.address"
+        >
+          <i class="fas fa-map-marker-alt mr-1"></i>
+          {{meeting.room.name}}
+        </div>
         <v-menu offset-y
           v-if="!isOwner"
         >
@@ -94,7 +101,7 @@ export default {
     return {
       options: ['option1', 'option2', 'option3'],
       totalPersons: 12,//Fix me
-      meetingName: meetingType[this.meeting.type]
+      meetingName: meetingType[this.meeting.meeting_type_id]
     }
   },
   methods: {
@@ -111,11 +118,7 @@ export default {
     },
     editMeeting() {
       this.$router.push({
-        path: '/room-list',
-        name: 'room-list',
-        params: {
-          meeting: this.meeting
-        }
+        path: `/room-list/meeting/${this.meeting.id}`
       })
     }
   },
@@ -165,6 +168,7 @@ export default {
       border-top: 1px solid #e1e1e1;
       padding: 1rem;
       display: flex;
+      align-items: center;
       justify-content: space-between;
     }
   }

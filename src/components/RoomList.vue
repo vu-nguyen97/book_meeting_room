@@ -1,5 +1,8 @@
 <template>
   <v-container>
+    <v-alert v-model="alert" :type="typeAlert" dismissible outlined>
+      {{message}}
+    </v-alert>
     <v-row class="fill-height">
       <v-col
         v-if="isShowAddCategoriesForm"
@@ -141,6 +144,7 @@
         </v-dialog>
 
         <v-btn
+          v-if="!meeting"
           class="mt-5"
           color="primary"
           block
@@ -148,6 +152,16 @@
           :disabled="isDisableAddMeetingBtn"
         >
           Add
+        </v-btn>
+        <v-btn
+          v-else
+          class="mt-5"
+          color="primary"
+          block
+          @click="onEditMeeting"
+          :disabled="isDisableEditMeetingBtn"
+        >
+          Edit
         </v-btn>
       </v-col>
       <v-btn
@@ -229,7 +243,11 @@
       colors: colors,
       typesOfMeeting: Object.values(meetingType),
       categories: [],
-      rooms: []
+      rooms: [],
+      message: null,
+      typeAlert: 'info',
+      alert: false,
+      meeting: null
     }),
     computed: {
       isDisableAddMeetingBtn: function() {
@@ -238,16 +256,50 @@
           isDisable = false
         }
         return isDisable
+      },
+      isDisableEditMeetingBtn: function() {
+        let isDisable = true
+        const meeting_type_id = this.typesOfMeeting.indexOf(this.activedType)
+        const room_id = this.getRoomId()
+        const startTime = moment(this.meeting.start_time).format('hh:mm')
+        const endTime = moment(this.meeting.end_time).format('hh:mm')
+
+        if (
+          this.startTime != startTime ||
+          this.endTime != endTime ||
+          meeting_type_id != this.meeting.meeting_type_id ||
+          room_id != this.meeting.room_id
+        ) {
+          isDisable = false
+        }
+        return isDisable
+      }
+    },
+    created () {
+      const meeting_id = this.$route.params.meeting_id
+      if (meeting_id) {
+        axios.get(`${process.env.VUE_APP_HOST_URL}/meeting`, {
+          params : { meeting_id: meeting_id }
+        })
+          .then(res => {
+            const meeting = res.data
+            this.startTime = moment(meeting.start_time).format('hh:mm')
+            this.endTime = moment(meeting.end_time).format('hh:mm')
+            this.selectedRoom = meeting.room.name
+            this.activedType = meetingType[meeting.meeting_type_id]
+            this.meetingDay = moment(meeting.start_time).format('YYYY-MM-DD')
+
+            this.meeting = meeting
+          })
       }
     },
     methods: {
       onAddMeeting() {
-        const indexOfTypeMeeting = this.typesOfMeeting.indexOf(this.activedType)
-        const indexOfRoom = this.categories.indexOf(this.selectedRoom)
-        const room_id = this.rooms[indexOfRoom].id
+        const meeting_type_id = this.typesOfMeeting.indexOf(this.activedType)
+        const room_id = this.getRoomId()
 
         axios.post(`${process.env.VUE_APP_HOST_URL}/meeting`, {
-          type: indexOfTypeMeeting,
+          meeting_type_id: meeting_type_id,
           start_time: `${this.meetingDay} ${this.startTime}:00`,
           end_time: `${this.meetingDay} ${this.endTime}:00`,
           room_id: room_id,
@@ -258,12 +310,33 @@
               name: this.activedType,
               start: `${this.meetingDay} ${this.startTime}:00`,
               end: `${this.meetingDay} ${this.endTime}:00`,
-              color: this.colors[indexOfTypeMeeting],
+              color: this.colors[meeting_type_id],
               category: this.selectedRoom,
             })
-            this.startTime = null
-            this.endTime = null
-            this.selectedRoom = null
+            this.getAlert('Add meeting success!')
+            this.resetForm()
+          })
+      },
+      onEditMeeting () {
+        const { meeting } = this
+        const room_id = this.getRoomId()
+
+        axios.put(`${process.env.VUE_APP_HOST_URL}/room-list`, {
+          id: meeting.id,
+          start_time: `${this.meetingDay} ${this.startTime}:00`,
+          end_time: `${this.meetingDay} ${this.endTime}:00`,
+          room_id: room_id,
+          meeting_type_id: meeting.meeting_type_id
+        })
+          .then((res) => {
+            if (res.data.message) {
+              const message = res.data.message
+              this.getAlert(message, 'error')
+            } else {
+              this.getAlert('Edit meeting success!')
+              this.resetForm()
+              this.$router.push({ path: '/room-list' })
+            }
           })
       },
       exit() {
@@ -273,8 +346,29 @@
       getEventColor (event) {
         return event.color
       },
+      getAlert(message, color = 'info') {
+        this.message = message
+        this.typeAlert = color
+        this.alert = true
+        setTimeout(() => {
+          this.alert = false
+        }, 1500);
+      },
+      getRoomId () {
+        const indexOfRoom = this.categories.indexOf(this.selectedRoom)
+        const room = this.rooms[indexOfRoom]
+        const room_id = room ? room.id : null
+
+        return room_id
+      },
       setToday () {
         this.focus = ''
+      },
+      resetForm () {
+        this.startTime = null
+        this.endTime = null
+        this.selectedRoom = null
+        this.meeting = null
       },
       // eslint-disable-next-line no-unused-vars
       fetchEvents ({ start, end }) {
@@ -296,10 +390,10 @@
 
               meetings.forEach(meeting => {
                 events.push({
-                  name: this.typesOfMeeting[meeting.type],
+                  name: this.typesOfMeeting[meeting.meeting_type_id],
                   start: moment(meeting.start_time).format('YYYY-MM-DD HH:mm:ss'),
                   end: moment(meeting.end_time).format('YYYY-MM-DD HH:mm:ss'),
-                  color: this.colors[meeting.type],
+                  color: this.colors[meeting.meeting_type_id],
                   category: room.name
                 })
               })

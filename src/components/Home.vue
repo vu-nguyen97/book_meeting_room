@@ -74,10 +74,10 @@ export default {
       const totalMeetings = meetings.length;
       const totalBaseColors = Object.keys(this.colors).length;
       if (totalMeetings > totalBaseColors) {
-        for (let i = totalBaseColors + 1; i <= totalMeetings; i++) {
+        for (let i = totalBaseColors; i <= totalMeetings; i++) {
           let indexOfColor = i % totalBaseColors;
           this.colors = Object.assign({}, this.colors, {
-            [i - 1]: this.colors[indexOfColor]
+            [i]: this.colors[indexOfColor]
           });
         }
       }
