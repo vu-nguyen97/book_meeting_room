@@ -30,14 +30,14 @@ Vue.use(VueMoment)
 
 const store = new Vuex.Store({
   state: {
-    userId: null,
+    user: null,
   },
   mutations: {
-    login(state, userId) {
-      state.userId = userId
+    login(state, user) {
+      state.user = user
     },
     logout(state) {
-      state.userId = null
+      state.user = null
     }
   }
 })
@@ -54,7 +54,7 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.name !== 'login' && !store.state.userId) next({ name: 'login' })
+  if (to.name !== 'login' && !store.state.user) next({ name: 'login' })
   else next()
 })
 

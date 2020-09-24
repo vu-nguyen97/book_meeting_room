@@ -28,7 +28,7 @@
 
 <script>
 import Card from './Card'
-import axios from 'axios'
+import api from '../api'
 
 export default {
   name: 'Home',
@@ -50,23 +50,7 @@ export default {
     Card
   },
   created () {
-    const userId = this.$store.state.userId
-    // axios.get(`${process.env.VUE_APP_HOST_URL}/user`, {
-    //   params: {
-    //     id: userId
-    //   }
-    // })
-    // .then((res) => {
-    //   if(res.data.role_id === 1) {
-    //     this.isAdmin = true
-    //   }
-    // })
-
-    axios.get(`${process.env.VUE_APP_HOST_URL}/user/meetings`, {
-      params: {
-        id: userId
-      }
-    })
+    api.get('/user/meetings')
     .then((res) => {
       const meetings = res.data
       this.meetings = [...meetings]

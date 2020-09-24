@@ -216,7 +216,7 @@
 
 <script>
   import moment from 'moment'
-  import axios from 'axios'
+  import api from '../api'
 
   const meetingType = {
     0: "Meeting",
@@ -278,7 +278,7 @@
     created () {
       const meeting_id = this.$route.params.meeting_id
       if (meeting_id) {
-        axios.get(`${process.env.VUE_APP_HOST_URL}/meeting`, {
+        api.get('/meeting', {
           params : { meeting_id: meeting_id }
         })
           .then(res => {
@@ -298,12 +298,11 @@
         const meeting_type_id = this.typesOfMeeting.indexOf(this.activedType)
         const room_id = this.getRoomId()
 
-        axios.post(`${process.env.VUE_APP_HOST_URL}/meeting`, {
-          meeting_type_id: meeting_type_id,
+        api.post('/meeting', {
+          meeting_type_id: meeting_type_id + 1,
           start_time: `${this.meetingDay} ${this.startTime}:00`,
           end_time: `${this.meetingDay} ${this.endTime}:00`,
-          room_id: room_id,
-          user_id: this.$store.state.userId
+          room_id: room_id
         })
           .then(() => {
             this.events.push({ 
@@ -321,12 +320,12 @@
         const { meeting } = this
         const room_id = this.getRoomId()
 
-        axios.put(`${process.env.VUE_APP_HOST_URL}/room-list`, {
+        api.put('/room-list', {
           id: meeting.id,
           start_time: `${this.meetingDay} ${this.startTime}:00`,
           end_time: `${this.meetingDay} ${this.endTime}:00`,
           room_id: room_id,
-          meeting_type_id: meeting.meeting_type_id
+          meeting_type_id: this.typesOfMeeting.indexOf(this.activedType)
         })
           .then((res) => {
             if (res.data.message) {
@@ -372,7 +371,7 @@
       },
       // eslint-disable-next-line no-unused-vars
       fetchEvents ({ start, end }) {
-        axios.get(`${process.env.VUE_APP_HOST_URL}/room-list`, {
+        api.get('/room-list', {
           params: { date: start.date }
         })
           .then((res) => {

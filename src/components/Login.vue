@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '../api'
 
 export default {
   name: 'Login',
@@ -55,26 +55,18 @@ export default {
       if (!isEmail) {
         fieldName = 'username'
       }
-      axios.post(`${process.env.VUE_APP_HOST_URL}/login`, {
+      
+      api.post('/login', {
         [fieldName]: this.email,
         password: this.password
-      }).then(
-        () => {
-          axios.get(`${process.env.VUE_APP_HOST_URL}/user`, {
-            params: {
-              [fieldName]: this.email
-            }
-          })
-          .then(res => {
-            const userId = res.data.id
-            this.$store.commit('login', userId)
-          })
-          .then(() => {
-            this.$router.push({ name: 'home', path: '/home' })
-          })
+      }).then((res) => {
+        const user = res.data
+        localStorage.setItem('access_token', user.token)
 
-        }, (err) => {
-          this.errorRequest = JSON.parse(err.request.responseText)[0].message
+        this.$store.commit('login', user)
+        this.$router.push({ name: 'home', path: '/home' })
+      }, (err) => {
+        this.errorRequest = JSON.parse(err.request.responseText)[0].message
       })
     },
     validateEmail(email) {
