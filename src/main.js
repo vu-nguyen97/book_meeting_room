@@ -2,11 +2,13 @@ import Vue from 'vue'
 import App from './App.vue'
 import vuetify from './plugins/vuetify';
 import api from './api'
+import store from './store'
+import router from './router'
 
 Vue.config.productionTip = false
 Vue.prototype.$appName = 'Book meeting'
-
 Vue.prototype.$http = api;
+
 api.defaults.timeout = 10000
 
 api.interceptors.request.use(
@@ -34,8 +36,13 @@ api.interceptors.response.use(
     if (error.response.status) {
       switch (error.response.status) {
         case 401:
-          alert("session expired");
-          //xoa data global, redirect login
+          {
+            alert("session expired");
+            store.state.user = null
+            router.push({
+              path: '/login'
+            })
+          }
           break;
 
         case 404:
