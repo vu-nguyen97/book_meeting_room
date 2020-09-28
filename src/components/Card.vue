@@ -4,7 +4,7 @@
       <v-card>
         <v-card-title class="headline">Thêm nhân viên cho cuộc họp</v-card-title>
         <v-autocomplete
-          class="mx-5 my-4"
+          class="mx-5 mt-4"
           v-model="activedValues"
           :items="items"
           :height=50
@@ -15,6 +15,15 @@
           multiple
           solo
         ></v-autocomplete>
+        <div v-if="joinedUser" class="px-5 mt-2">
+          <h4 class="ma-1">Thành viên tham dự:</h4>
+          <ul
+            v-for="(user, index) in joinedUser"
+            :key="index"
+          >
+            <li>{{user}}</li>
+          </ul>
+        </div>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="green darken-1" text @click="dialog = false">Hủy</v-btn>
@@ -94,7 +103,7 @@
           @click="editMeeting"
         >
           Edit
-          <v-icon class="ml-1">keyboard_arrow_down</v-icon>
+          <v-icon class="ml-1">keyboard_arrow_right</v-icon>
         </v-btn>
       </div>
     </div>
@@ -124,24 +133,39 @@ export default {
   data() {
     return {
       options: ['Thêm thành viên'],
-      totalPersons: 12,//Fix me
+      totalPersons: 1,
       dialog: false,
       items: [],
-      activedValues: null,
+      activedValues: [],
+      joinedUser: [],
       users: [],
       meetingName: MEETING_TYPES[this.meeting.meeting_type_id]
     }
+  },
+  created () {
+    this.getTotalUserInMeeting()
   },
   methods: {
     handleMeetingSeeting(option) {
       if (option == 'Thêm thành viên') {
         
-        api.get('/user')
+        api.get('/user', {
+          params: {
+            fetch_user_joined_meeting: true,
+            meeting_id: this.meeting.id
+          }
+        })
         .then(res => {
-          let users = res.data
-          users = users
-            .filter(user => user.role_id != 1)
-            .sort((user1, user2) => user1.department_id > user2.department_id ? 1 : -1)
+          let users = res.data.rows
+          const joinedUserIds = res.data.userMeeting.map(userMeeting => userMeeting.user.id)
+
+          users = users.filter(user => {
+            if (joinedUserIds.indexOf(user.id) != -1 || user.role_id == 1) {
+              return false
+            }
+            return true
+          }).sort((user1, user2) => user1.department_id > user2.department_id ? 1 : -1)
+          
           const fomattedUser = users.map(user => {
             return {
               id: user.id,
@@ -151,13 +175,28 @@ export default {
           
           this.users = fomattedUser
           this.items = fomattedUser.map(user => user.name)
+          this.joinedUser = res.data.userMeeting.map(userMeeting =>
+            `${userMeeting.user.username} - ${DEPARTMENTS[userMeeting.user.department_id - 1]}`
+          )
           this.dialog = true
         })
       }
     },
+    getTotalUserInMeeting() {
+      api.get('/user', {
+        params: {
+          fetch_user_joined_meeting: true,
+          meeting_id: this.meeting.id
+        }
+      }).then(res => {
+        this.totalPersons = res.data.userMeeting.length
+      })
+    },
     inviteEmployee() {
-      console.log(this.activedValues, this.users)
       let userIdArray = []
+      if(this.activedValues.length == 0) {
+        return
+      }
       this.activedValues.forEach(value => {
         this.users.forEach(user => {
           if (user.name == value) {
@@ -165,16 +204,26 @@ export default {
           }
         })
       })
-      console.log(userIdArray)
 
-      // api.post('/meeting/add-person', {
-      //   meeting_id: this.meeting.id,
-      //   user_ids: userIdArray[0]
-      // })
-      //   .then((res) => {
-      //     console.log(res)
-      //   })
-      this.dialog = false
+      const dataRequest = userIdArray.map(userId => {
+        return {
+          user_id: userId,
+          meeting_id: this.meeting.id,
+          is_created_user: false
+        }
+      })
+
+      api.post('/meeting/add-person', {
+       data: dataRequest
+      })
+        .then(() => {
+          this.activedValues.forEach(value => {
+            this.joinedUser.push(value)
+            this.items = this.items.filter(item => item !== value)
+          })
+          this.totalPersons += this.activedValues.length
+          this.activedValues = []
+        })
     },
     formatTime: function(time, type) {
       if (type == 'hour') {

@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import store from './store'
 
 import Login from './components/Login.vue'
 import Home from './components/Home.vue'
@@ -20,7 +19,8 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.name !== 'login' && !store.state.user) next({ name: 'login' })
+  const token = localStorage.getItem("access_token");
+  if (to.name !== 'login' && !token) next({ name: 'login' })
   else next()
 })
 
