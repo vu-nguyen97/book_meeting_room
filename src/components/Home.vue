@@ -29,7 +29,7 @@
 
 <script>
 import Card from './Card'
-import api from '../api'
+import userRequest from '../service/modules/user'
 
 export default {
   name: 'Home',
@@ -51,7 +51,7 @@ export default {
     Card
   },
   created () {
-    api.get('/user/meetings')
+    userRequest.getAllMeetingsOfUser()
     .then((res) => {
       const meetings = res.data
       this.meetings = [...meetings]

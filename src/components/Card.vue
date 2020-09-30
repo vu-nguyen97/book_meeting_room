@@ -32,7 +32,6 @@
         </div>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="green darken-1" text @click="dialog = false">Hủy</v-btn>
           <v-btn color="green darken-1" text @click="inviteEmployee">Lưu</v-btn>
         </v-card-actions>
       </v-card>
@@ -115,7 +114,8 @@
 
 <script>
 import moment from 'moment'
-import api from '../api'
+import userRequest from '../service/modules/user'
+import meetingRequest from '../service/modules/meeting'
 
 const MEETING_TYPES = {
   0: "Meeting",
@@ -162,11 +162,7 @@ export default {
   methods: {
     handleMeetingSeeting(option) {
       if (option === 'Thêm thành viên') {
-        api.get('/user', {
-          params: {
-            meeting_id: this.meeting.id
-          }
-        })
+        userRequest.getUser()
         .then(res => {
           let allUsers = res.data
           const filteredUsers = allUsers.filter(user => {
@@ -210,9 +206,7 @@ export default {
         }
       })
 
-      api.post('/meeting/add-person', {
-        data: dataRequest
-      })
+      meetingRequest.addUsersToMeeting(dataRequest)
         .then(() => {
           this.activedValues.forEach(value => {
             this.items = this.items.filter(item => item !== value)
@@ -232,12 +226,8 @@ export default {
       const indexOfUserInArr = this.formatedUsers.indexOf(user)
       const user_id = this.joinedUserIds[indexOfUserInArr]
 
-      api.delete('/meeting/add-person', {
-        params: {
-          meeting_id: this.meeting.id,
-          user_id
-        }
-      }).then(() => {
+      meetingRequest.deleteUserInMeeting(this.meeting.id, user_id)
+      .then(() => {
         this.formatedUsers.splice(indexOfUserInArr, 1)
         this.joinedUserIds.splice(indexOfUserInArr, 1)
         this.totalPersons -= 1

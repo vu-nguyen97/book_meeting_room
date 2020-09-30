@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import api from '../api'
+import request from '../service/modules/login'
 
 export default {
   name: 'Login',
@@ -50,16 +50,8 @@ export default {
   },
   methods: {
     loginRequest() {
-      const isEmail = this.validateEmail(this.email)
-      let fieldName = 'email'
-      if (!isEmail) {
-        fieldName = 'username'
-      }
-      
-      api.post('/login', {
-        [fieldName]: this.email,
-        password: this.password
-      }).then((res) => {
+      request.login(this.email, this.password)
+      .then((res) => {
         const user = res.data
         localStorage.setItem('access_token', user.token)
 
@@ -69,11 +61,6 @@ export default {
         this.errorRequest = JSON.parse(err.request.responseText)[0].message
       })
     },
-    validateEmail(email) {
-      // eslint-disable-next-line no-useless-escape
-      const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      return re.test(email);
-    }
   },
   data() {
     return {

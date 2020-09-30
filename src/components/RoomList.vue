@@ -216,7 +216,8 @@
 
 <script>
   import moment from 'moment'
-  import api from '../api'
+  import roomRequest from '../service/modules/room_list'
+  import meetingRequest from '../service/modules/meeting'
 
   const meetingType = {
     0: "Meeting",
@@ -280,9 +281,7 @@
     created () {
       const meeting_id = this.$route.params.meeting_id
       if (meeting_id) {
-        api.get('/meeting', {
-          params : { meeting_id: meeting_id }
-        })
+        meetingRequest.getMeetingById(meeting_id)
           .then(res => {
             const meeting = res.data
             this.startTime = moment(meeting.start_time).format('hh:mm')
@@ -300,7 +299,7 @@
         const meeting_type_id = this.typesOfMeeting.indexOf(this.activedType)
         const room_id = this.getRoomId()
 
-        api.post('/meeting', {
+        meetingRequest.addNewMeeting({
           meeting_type_id: meeting_type_id + 1,
           start_time: `${this.meetingDay} ${this.startTime}:00`,
           end_time: `${this.meetingDay} ${this.endTime}:00`,
@@ -322,7 +321,7 @@
         const { meeting } = this
         const room_id = this.getRoomId()
 
-        api.put('/room-list', {
+        meetingRequest.updateMeeting({
           id: meeting.id,
           start_time: `${this.meetingDay} ${this.startTime}:00`,
           end_time: `${this.meetingDay} ${this.endTime}:00`,
@@ -370,12 +369,11 @@
         this.endTime = null
         this.selectedRoom = null
         this.meeting = null
+        this.activedType = 'Meeting'
       },
       // eslint-disable-next-line no-unused-vars
       fetchEvents ({ start, end }) {
-        api.get('/room-list', {
-          params: { date: start.date }
-        })
+        roomRequest.getMeeting(start.date)
           .then((res) => {
             const roomData = res.data
             const events = []
