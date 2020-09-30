@@ -132,7 +132,7 @@ export default {
     color: String,
     meeting: Object,
     users: Array,
-    isOwner: Number
+    isOwner: Boolean
   },
   data() {
     return {
