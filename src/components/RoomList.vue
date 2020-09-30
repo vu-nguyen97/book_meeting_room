@@ -263,12 +263,14 @@
         const room_id = this.getRoomId()
         const startTime = moment(this.meeting.start_time).format('hh:mm')
         const endTime = moment(this.meeting.end_time).format('hh:mm')
+        const dayTime = moment(this.meeting.start_time).format('YYYY-MM-DD')
 
         if (
           this.startTime != startTime ||
           this.endTime != endTime ||
-          meeting_type_id != this.meeting.meeting_type_id ||
-          room_id != this.meeting.room_id
+          this.meeting.meeting_type_id != meeting_type_id ||
+          this.meeting.room_id != room_id ||
+          this.meetingDay != dayTime
         ) {
           isDisable = false
         }

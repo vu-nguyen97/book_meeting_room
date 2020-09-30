@@ -38,6 +38,7 @@
     },
     methods: {
       logoutRequest() {
+        localStorage.removeItem('access_token')
         this.$store.commit('logout')
         this.$router.push({ path: '/login' })
       }

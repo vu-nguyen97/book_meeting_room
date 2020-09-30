@@ -18,6 +18,7 @@
           v-if="meetings"
           :color="colors[index]"
           :meeting="meeting.meeting"
+          :users="meeting.meeting.users"
           :isOwner="meeting.is_created_user"
         />
       </v-col>

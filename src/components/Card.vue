@@ -4,7 +4,7 @@
       <v-card>
         <v-card-title class="headline">Thêm nhân viên cho cuộc họp</v-card-title>
         <v-autocomplete
-          class="mx-5 mt-4"
+          class="Card-searchUserMenu mx-5 mt-4"
           v-model="activedValues"
           :items="items"
           :height=50
@@ -15,13 +15,19 @@
           multiple
           solo
         ></v-autocomplete>
-        <div v-if="joinedUser" class="px-5 mt-2">
+        <div v-if="formatedUsers" class="px-5 mt-2">
           <h4 class="ma-1">Thành viên tham dự:</h4>
           <ul
-            v-for="(user, index) in joinedUser"
+            class="pl-3"
+            v-for="(user, index) in formatedUsers"
             :key="index"
           >
-            <li>{{user}}</li>
+            <li class="Card-searchUserMenu-user pl-2 pr-4">
+              <span>{{user}}</span>
+              <span @click="removeUser(user)">
+                <i class="Card-searchUserMenu-user-removeBtn fas fa-times" />
+              </span>
+            </li>
           </ul>
         </div>
         <v-card-actions>
@@ -45,7 +51,7 @@
                   v-on="on"
                 >keyboard_arrow_down</v-icon>
               </template>
-              <v-list>
+              <v-list v-if="isOwner">
                 <v-list-item
                   v-for="(option, index) in options"
                   :key="index"
@@ -54,6 +60,7 @@
                   <v-list-item-title>{{ option }}</v-list-item-title>
                 </v-list-item>
               </v-list>
+              <v-list v-else><v-list-item>No option</v-list-item></v-list>
             </v-menu>
           </div>
         </div>
@@ -86,12 +93,8 @@
             </v-btn>
           </template>
           <v-list>
-            <v-list-item
-              v-for="(option, index) in options"
-              :key="index"
-              @click="handleMeetingSeeting(option)"
-            >
-              <v-list-item-title>{{ option }}</v-list-item-title>
+            <v-list-item>
+              option
             </v-list-item>
           </v-list>
         </v-menu>
@@ -128,77 +131,71 @@ export default {
   props: {
     color: String,
     meeting: Object,
+    users: Array,
     isOwner: Number
   },
   data() {
     return {
       options: ['Thêm thành viên'],
-      totalPersons: 1,
+      meetingName: MEETING_TYPES[this.meeting.meeting_type_id],
       dialog: false,
+      joinedUserIds: [],
+      formatedUsers: [],
+      totalPersons: 1,
+
       items: [],
       activedValues: [],
-      joinedUser: [],
-      users: [],
-      meetingName: MEETING_TYPES[this.meeting.meeting_type_id]
+
+      invitedUsers: []
     }
   },
   created () {
-    this.getTotalUserInMeeting()
+    if (this.users.length === 0) {
+      return
+    }
+    this.users.forEach(user => {
+      this.joinedUserIds.push(user.id)
+      this.formatedUsers.push(`${user.username} - ${DEPARTMENTS[user.department_id - 1]}`)
+    })
+    this.totalPersons = this.users.length
   },
   methods: {
     handleMeetingSeeting(option) {
-      if (option == 'Thêm thành viên') {
-        
+      if (option === 'Thêm thành viên') {
         api.get('/user', {
           params: {
-            fetch_user_joined_meeting: true,
             meeting_id: this.meeting.id
           }
         })
         .then(res => {
-          let users = res.data.rows
-          const joinedUserIds = res.data.userMeeting.map(userMeeting => userMeeting.user.id)
-
-          users = users.filter(user => {
-            if (joinedUserIds.indexOf(user.id) != -1 || user.role_id == 1) {
+          let allUsers = res.data
+          const filteredUsers = allUsers.filter(user => {
+            if (this.joinedUserIds.indexOf(user.id) != -1 || user.role_id == 1) {
               return false
             }
             return true
           }).sort((user1, user2) => user1.department_id > user2.department_id ? 1 : -1)
-          
-          const fomattedUser = users.map(user => {
+
+          const fomattedUsers = filteredUsers.map(user => {
             return {
               id: user.id,
               name: `${user.username} - ${DEPARTMENTS[user.department_id - 1]}`
             }
           })
           
-          this.users = fomattedUser
-          this.items = fomattedUser.map(user => user.name)
-          this.joinedUser = res.data.userMeeting.map(userMeeting =>
-            `${userMeeting.user.username} - ${DEPARTMENTS[userMeeting.user.department_id - 1]}`
-          )
+          this.invitedUsers = fomattedUsers
+          this.items = fomattedUsers.map(user => user.name)
           this.dialog = true
         })
       }
     },
-    getTotalUserInMeeting() {
-      api.get('/user', {
-        params: {
-          fetch_user_joined_meeting: true,
-          meeting_id: this.meeting.id
-        }
-      }).then(res => {
-        this.totalPersons = res.data.userMeeting.length
-      })
-    },
     inviteEmployee() {
       let userIdArray = []
       if(this.activedValues.length == 0) {
-        return
+        this.dialog = false
       }
       this.activedValues.forEach(value => {
-        this.users.forEach(user => {
+        this.invitedUsers.forEach(user => {
           if (user.name == value) {
             userIdArray.push(user.id)
           }
@@ -214,16 +211,38 @@ export default {
       })
 
       api.post('/meeting/add-person', {
-       data: dataRequest
+        data: dataRequest
       })
         .then(() => {
           this.activedValues.forEach(value => {
-            this.joinedUser.push(value)
             this.items = this.items.filter(item => item !== value)
+            this.formatedUsers.push(value)
+
+            this.invitedUsers.forEach(user => {
+              if (user.name == value) {
+                this.joinedUserIds.push(user.id)
+              }
+            })
           })
           this.totalPersons += this.activedValues.length
           this.activedValues = []
         })
+    },
+    removeUser(user) {
+      const indexOfUserInArr = this.formatedUsers.indexOf(user)
+      const user_id = this.joinedUserIds[indexOfUserInArr]
+
+      api.delete('/meeting/add-person', {
+        params: {
+          meeting_id: this.meeting.id,
+          user_id
+        }
+      }).then(() => {
+        this.formatedUsers.splice(indexOfUserInArr, 1)
+        this.joinedUserIds.splice(indexOfUserInArr, 1)
+        this.totalPersons -= 1
+        this.items.push(user)
+      })
     },
     formatTime: function(time, type) {
       if (type == 'hour') {
@@ -278,6 +297,27 @@ export default {
         display: flex;
         justify-content: space-between;
         align-items: center;
+      }
+    }
+
+    &-searchUserMenu {
+      &-user {
+        $root: &;
+        height: 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &-removeBtn {
+          display: none;
+          cursor: pointer;
+        }
+        &:hover {
+          background-color: #f1f1f1;
+          #{$root}-removeBtn {
+            display: block;
+          }
+        }
       }
     }
 
