@@ -38,7 +38,7 @@ api.interceptors.response.use(
         case 401:
           {
             alert("session expired");
-            store.state.user = null
+            store.dispatch('logoutAsync')
             router.push({
               path: '/login'
             })

@@ -13,5 +13,10 @@ export default new Vuex.Store({
     logout(state) {
       state.user = null
     }
+  },
+  actions: {
+    logoutAsync({commit}, payload) {
+      commit('logout', payload);
+    }
   }
 })
