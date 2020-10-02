@@ -78,7 +78,7 @@
           {{meeting.room.name}}
         </div>
         <v-menu offset-y
-          v-if="!isOwner"
+          v-if="!isEditPermission"
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -99,7 +99,7 @@
         </v-menu>
 
         <v-btn
-          v-if="isOwner"
+          v-if="isEditPermission"
           color="primary"
           outlined
           @click="editMeeting"
@@ -118,11 +118,11 @@ import userRequest from '../service/modules/user'
 import meetingRequest from '../service/modules/meeting'
 
 const MEETING_TYPES = {
-  0: "Meeting",
-  1: "Event",
-  2: "Birthday",
-  3: "Conference",
-  4: "Party",
+  1: "Meeting",
+  2: "Event",
+  3: "Birthday",
+  4: "Conference",
+  5: "Party",
 }
 const DEPARTMENTS = ['D2', 'D6', 'D9']
 
@@ -132,7 +132,7 @@ export default {
     color: String,
     meeting: Object,
     users: Array,
-    isOwner: Boolean
+    isOwner: Number
   },
   data() {
     return {
@@ -149,6 +149,16 @@ export default {
       invitedUsers: []
     }
   },
+  computed: {
+    isEditPermission() {
+      const { start_time } = this.meeting
+      if (this.isOwner) {
+        const isOccurredMeeting = moment(start_time).isBefore(new Date)
+        return isOccurredMeeting ? false : true
+      }
+      return false
+    }
+  },
   created () {
     if (this.users.length === 0) {
       return
@@ -162,6 +172,9 @@ export default {
   methods: {
     handleMeetingSeeting(option) {
       if (option === 'Thêm thành viên') {
+        if (!this.isEditPermission) {
+          return alert('Đã hết thời gian đăng ký!')
+        }
         userRequest.getUser()
         .then(res => {
           let allUsers = res.data

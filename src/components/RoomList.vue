@@ -220,11 +220,11 @@
   import meetingRequest from '../service/modules/meeting'
 
   const meetingType = {
-    0: "Meeting",
-    1: "Event",
-    2: "Birthday",
-    3: "Conference",
-    4: "Party",
+    1: "Meeting",
+    2: "Event",
+    3: "Birthday",
+    4: "Conference",
+    5: "Party",
   }
   const colors = ['blue', 'indigo', 'cyan', 'green', 'grey darken-1']
 
@@ -260,7 +260,7 @@
       },
       isDisableEditMeetingBtn: function() {
         let isDisable = true
-        const meeting_type_id = this.typesOfMeeting.indexOf(this.activedType)
+        const meeting_type_id = this.typesOfMeeting.indexOf(this.activedType) + 1
         const room_id = this.getRoomId()
         const startTime = moment(this.meeting.start_time).format('hh:mm')
         const endTime = moment(this.meeting.end_time).format('hh:mm')
@@ -296,11 +296,11 @@
     },
     methods: {
       onAddMeeting() {
-        const meeting_type_id = this.typesOfMeeting.indexOf(this.activedType)
+        const meeting_type_id = this.typesOfMeeting.indexOf(this.activedType) + 1
         const room_id = this.getRoomId()
 
         meetingRequest.addNewMeeting({
-          meeting_type_id: meeting_type_id + 1,
+          meeting_type_id: meeting_type_id,
           start_time: `${this.meetingDay} ${this.startTime}:00`,
           end_time: `${this.meetingDay} ${this.endTime}:00`,
           room_id: room_id
@@ -316,6 +316,12 @@
             this.getAlert('Add meeting success!')
             this.resetForm()
           })
+          .catch(err => {
+            const message = err.data[0].message
+            if (message) {
+              this.getAlert(message, 'error')
+            }
+          })
       },
       onEditMeeting () {
         const { meeting } = this
@@ -326,7 +332,7 @@
           start_time: `${this.meetingDay} ${this.startTime}:00`,
           end_time: `${this.meetingDay} ${this.endTime}:00`,
           room_id: room_id,
-          meeting_type_id: this.typesOfMeeting.indexOf(this.activedType)
+          meeting_type_id: this.typesOfMeeting.indexOf(this.activedType) + 1
         })
           .then((res) => {
             if (res.data.message) {
@@ -389,7 +395,7 @@
 
               meetings.forEach(meeting => {
                 events.push({
-                  name: this.typesOfMeeting[meeting.meeting_type_id],
+                  name: this.typesOfMeeting[meeting.meeting_type_id - 1],
                   start: moment(meeting.start_time).format('YYYY-MM-DD HH:mm:ss'),
                   end: moment(meeting.end_time).format('YYYY-MM-DD HH:mm:ss'),
                   color: this.colors[meeting.meeting_type_id],
