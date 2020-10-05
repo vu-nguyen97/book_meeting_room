@@ -5,6 +5,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     user: null,
+    alert: null,
+    typeAlert: 'error'
   },
   mutations: {
     login(state, user) {
@@ -12,11 +14,23 @@ export default new Vuex.Store({
     },
     logout(state) {
       state.user = null
+    },
+    setAlert(state, alert) {
+      const isAlertObj = (typeof alert === 'string') ? false : true
+      state.alert = isAlertObj ? alert.message : alert
+      state.typeAlert = isAlertObj ? alert.type : 'error'
+
+      setTimeout(() => {
+        state.alert = null
+      }, 3000);
     }
   },
   actions: {
     logoutAsync({commit}, payload) {
       commit('logout', payload);
-    }
+    },
+    setAlertAsync({commit}, payload) {
+      commit('setAlert', payload);
+    },
   }
 })

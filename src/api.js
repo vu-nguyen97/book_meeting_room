@@ -35,6 +35,15 @@ api.interceptors.response.use(
   error => {
     if (error.response.status) {
       switch (error.response.status) {
+        case 400:
+          {
+            const message = error.response.data.message || error.response.data[0].message
+            if (message) {
+              store.dispatch('setAlertAsync', message)
+            }
+          }
+          break;
+
         case 401:
           {
             alert("session expired");
@@ -49,7 +58,7 @@ api.interceptors.response.use(
           alert('page not exist');
           break;
       }
-      return Promise.reject(error.response);
+      // return Promise.reject(error.response);
     }
   }
 );

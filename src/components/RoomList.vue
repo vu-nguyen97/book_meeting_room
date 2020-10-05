@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-alert v-model="alert" :type="typeAlert" dismissible outlined>
-      {{message}}
+    <v-alert :value="alert ? true : false" :type="$store.state.typeAlert" dismissible outlined>
+      {{alert}}
     </v-alert>
     <v-row class="fill-height">
       <v-col
@@ -245,9 +245,6 @@
       typesOfMeeting: Object.values(meetingType),
       categories: [],
       rooms: [],
-      message: null,
-      typeAlert: 'info',
-      alert: false,
       meeting: null
     }),
     computed: {
@@ -276,7 +273,10 @@
           isDisable = false
         }
         return isDisable
-      }
+      },
+      alert: function () {
+        return this.$store.state.alert
+      },
     },
     created () {
       const meeting_id = this.$route.params.meeting_id
@@ -313,14 +313,8 @@
               color: this.colors[meeting_type_id],
               category: this.selectedRoom,
             })
-            this.getAlert('Add meeting success!')
+            this.$store.dispatch('setAlertAsync', {type: 'info', message: 'Add meeting success!'})
             this.resetForm()
-          })
-          .catch(err => {
-            const message = err.data[0].message
-            if (message) {
-              this.getAlert(message, 'error')
-            }
           })
       },
       onEditMeeting () {
@@ -335,11 +329,8 @@
           meeting_type_id: this.typesOfMeeting.indexOf(this.activedType) + 1
         })
           .then((res) => {
-            if (res.data.message) {
-              const message = res.data.message
-              this.getAlert(message, 'error')
-            } else {
-              this.getAlert('Edit meeting success!')
+            if (res && res.status == 200) {
+              this.$store.dispatch('setAlertAsync', {type: 'info', message: 'Edit meeting success!'})
               this.resetForm()
               this.$router.push({ path: '/room-list' })
             }
@@ -351,14 +342,6 @@
       },
       getEventColor (event) {
         return event.color
-      },
-      getAlert(message, color = 'info') {
-        this.message = message
-        this.typeAlert = color
-        this.alert = true
-        setTimeout(() => {
-          this.alert = false
-        }, 1500);
       },
       getRoomId () {
         const indexOfRoom = this.categories.indexOf(this.selectedRoom)
