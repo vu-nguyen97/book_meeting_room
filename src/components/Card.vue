@@ -257,7 +257,7 @@ export default {
     },
     editMeeting() {
       this.$router.push({
-        path: `/room-list/meeting/${this.meeting.id}`
+        path: `/room-list/${this.meeting.id}`
       })
     }
   },

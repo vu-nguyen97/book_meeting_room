@@ -46,7 +46,7 @@
     created () {
       const hashUrl = window.location.hash
       const activePage = hashUrl.split('/').slice(-1)[0]
-      this.activePage = activePage
+      this.activePage = activePage ? activePage : 'home'
     },
     watch: {
       $route(to) {
