@@ -1,8 +1,8 @@
 import request from '../index'
 
 export default {
-  getAllMeetingsOfUser() {
-    return request('get', '/user/meetings')
+  getAllMeetingsOfUser(params) {
+    return request('get', '/user/meetings', params)
   },
 
   getUser() {
