@@ -305,7 +305,6 @@
             this.meetingDay = moment(meeting.start_time).format('YYYY-MM-DD')
             this.meeting = meeting
           }
-          console.log('end created')
           this.isShowSpinner = false
         })
     },
@@ -325,7 +324,7 @@
               name: this.activedType,
               start: `${this.meetingDay} ${this.startTime}:00`,
               end: `${this.meetingDay} ${this.endTime}:00`,
-              color: this.colors[meeting_type_id],
+              color: this.colors[meeting_type_id - 1],
               category: this.selectedRoom,
             })
             this.$store.dispatch('setAlertAsync', {type: 'info', message: 'Add meeting success!'})
@@ -378,7 +377,14 @@
         this.activedType = 'Meeting'
       },
       // eslint-disable-next-line no-unused-vars
-      fetchEvents ({ start, end }) {
+      fetchEvents ({start, end}) {
+        if(this.isShowSpinner) {
+          setTimeout(() => {
+            this.fetchEvents({start, end})
+          }, 1000);
+          return
+        }
+
         roomRequest.getMeetingsByRooms(start.date)
           .then((res) => {
             const roomData = res.data
@@ -394,13 +400,12 @@
                   name: this.meetingTypes[meeting.meeting_type_id - 1],
                   start: moment(meeting.start_time).format('YYYY-MM-DD HH:mm:ss'),
                   end: moment(meeting.end_time).format('YYYY-MM-DD HH:mm:ss'),
-                  color: this.colors[meeting.meeting_type_id],
+                  color: this.colors[meeting.meeting_type_id - 1],
                   category: room.name
                 })
               })
             })
             this.events = events
-            console.log('end fetch')
           })
       },
     },

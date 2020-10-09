@@ -335,7 +335,7 @@
           .then(res => this.updateMeetings(res.data))
       },
       filterByEndDay(endDay) {
-        this.$refs.startMenu.save(endDay)
+        this.$refs.endMenu.save(endDay)
         userRequest.getAllMeetingsOfUser({end_time: endDay})
           .then(res => this.updateMeetings(res.data))
       },
