@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <Spinner :isShowSpinner="isShowSpinner"></Spinner>
     <v-alert :value="alert ? true : false" :type="$store.state.typeAlert" dismissible outlined>
       {{alert}}
     </v-alert>
@@ -32,7 +33,7 @@
 
         <v-select
           class="mt-5"
-          :items="typesOfMeeting"
+          :items="meetingTypes"
           v-model="activedType"
           label="Choose type"
           hide-details
@@ -218,14 +219,8 @@
   import moment from 'moment'
   import roomRequest from '../service/modules/room_list'
   import meetingRequest from '../service/modules/meeting'
+  import Spinner from './Spinner'
 
-  const meetingType = {
-    1: "Meeting",
-    2: "Event",
-    3: "Birthday",
-    4: "Conference",
-    5: "Party",
-  }
   const colors = ['blue', 'indigo', 'cyan', 'green', 'grey darken-1']
 
   export default {
@@ -242,11 +237,16 @@
       focus: '',
       events: [],
       colors: colors,
-      typesOfMeeting: Object.values(meetingType),
+
       categories: [],
+      meetingTypes: [],
       rooms: [],
-      meeting: null
+      meeting: null,
+      isShowSpinner: true,
     }),
+    components: {
+      Spinner,
+    },
     computed: {
       isDisableAddMeetingBtn: function() {
         let isDisable = true
@@ -257,7 +257,7 @@
       },
       isDisableEditMeetingBtn: function() {
         let isDisable = true
-        const meeting_type_id = this.typesOfMeeting.indexOf(this.activedType) + 1
+        const meeting_type_id = this.meetingTypes.indexOf(this.activedType) + 1
         const room_id = this.getRoomId()
         const startTime = moment(this.meeting.start_time).format('hh:mm')
         const endTime = moment(this.meeting.end_time).format('hh:mm')
@@ -279,24 +279,39 @@
       },
     },
     created () {
-      const meeting_id = this.$route.params.meeting_id
-      if (meeting_id) {
-        meetingRequest.getMeetingById(meeting_id)
-          .then(res => {
-            const meeting = res.data
+      let meeting_id = null
+      if (this.$route.params) {
+        meeting_id = this.$route.params.meeting_id
+      }
+      roomRequest.getMeetingData(meeting_id)
+        .then(res => {
+          const data = res.data
+          const { meeting, rooms, meetingTypes } = data
+          
+          this.rooms = rooms
+          this.categories = rooms.map(room => room.name)
+          this.meetingTypes = meetingTypes.map(meetingType => meetingType.type)
+
+          if (meeting) {
+            meetingTypes.forEach(typeObj => {
+              if (typeObj.id == meeting.meeting_type_id) {
+                this.activedType = typeObj.type
+              }
+            })
+
             this.startTime = moment(meeting.start_time).format('hh:mm')
             this.endTime = moment(meeting.end_time).format('hh:mm')
             this.selectedRoom = meeting.room.name
-            this.activedType = meetingType[meeting.meeting_type_id]
             this.meetingDay = moment(meeting.start_time).format('YYYY-MM-DD')
-
             this.meeting = meeting
-          })
-      }
+          }
+          console.log('end created')
+          this.isShowSpinner = false
+        })
     },
     methods: {
       onAddMeeting() {
-        const meeting_type_id = this.typesOfMeeting.indexOf(this.activedType) + 1
+        const meeting_type_id = this.meetingTypes.indexOf(this.activedType) + 1
         const room_id = this.getRoomId()
 
         meetingRequest.addNewMeeting({
@@ -326,7 +341,7 @@
           start_time: `${this.meetingDay} ${this.startTime}:00`,
           end_time: `${this.meetingDay} ${this.endTime}:00`,
           room_id: room_id,
-          meeting_type_id: this.typesOfMeeting.indexOf(this.activedType) + 1
+          meeting_type_id: this.meetingTypes.indexOf(this.activedType) + 1
         })
           .then((res) => {
             if (res && res.status == 200) {
@@ -344,10 +359,12 @@
         return event.color
       },
       getRoomId () {
-        const indexOfRoom = this.categories.indexOf(this.selectedRoom)
-        const room = this.rooms[indexOfRoom]
-        const room_id = room ? room.id : null
-
+        let room_id = null
+        this.rooms.forEach(room => {
+          if (room.name == this.selectedRoom) {
+            room_id = room.id
+          }
+        })
         return room_id
       },
       setToday () {
@@ -362,23 +379,19 @@
       },
       // eslint-disable-next-line no-unused-vars
       fetchEvents ({ start, end }) {
-        roomRequest.getMeeting(start.date)
+        roomRequest.getMeetingsByRooms(start.date)
           .then((res) => {
             const roomData = res.data
             const events = []
-            const rooms = []
 
             roomData.forEach(room => {
-              rooms.push({
-                id: room.id,
-                name: room.name,
-                address: room.address
-              })
               const { meetings } = room
-
+              if (meetings.length == 0) {
+                return
+              }
               meetings.forEach(meeting => {
                 events.push({
-                  name: this.typesOfMeeting[meeting.meeting_type_id - 1],
+                  name: this.meetingTypes[meeting.meeting_type_id - 1],
                   start: moment(meeting.start_time).format('YYYY-MM-DD HH:mm:ss'),
                   end: moment(meeting.end_time).format('YYYY-MM-DD HH:mm:ss'),
                   color: this.colors[meeting.meeting_type_id],
@@ -386,10 +399,8 @@
                 })
               })
             })
-
-            this.rooms = rooms
-            this.categories = rooms.map(room => room.name)
             this.events = events
+            console.log('end fetch')
           })
       },
     },

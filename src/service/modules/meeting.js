@@ -23,4 +23,8 @@ export default {
   getMeetingById(meeting_id) {
     return request('get', `/meeting/${meeting_id}`)
   },
+
+  getMeetingTypesInfo() {
+    return request('get', '/meeting_type')
+  }
 }

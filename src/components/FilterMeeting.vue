@@ -1,7 +1,8 @@
 <template>
   <div class="FilterMeeting mt-4">
-    <template>
-      <div class="text-center">
+    <div class="FilterMeeting-filtering">
+      <h4>Filter by:</h4>
+      <div class="ml-4">
         <v-menu offset-y>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -11,7 +12,7 @@
               v-bind="attrs"
               v-on="on"
             >
-              Filter by day
+              Day
               <v-icon class="ml-1">keyboard_arrow_down</v-icon>
             </v-btn>
           </template>
@@ -116,10 +117,8 @@
           </v-list>
         </v-menu>
       </div>
-    </template>
 
-    <template>
-      <div class="text-center ml-6">
+      <div class="ml-6">
         <v-menu offset-y>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -129,7 +128,7 @@
               v-bind="attrs"
               v-on="on"
             >
-              Group by
+              Room
               <v-icon class="ml-1">keyboard_arrow_down</v-icon>
             </v-btn>
           </template>
@@ -140,23 +139,90 @@
               color="primary"
             >
               <v-list-item
-                @click="option.handleClick"
-                v-for="(option, index) in groupByOptions"
+                v-for="(room, index) in roomNames"
+                @click="filterRoom(room)"
                 :key="index"
               >
-                {{option.name}}
+                {{room}}
               </v-list-item>
             </v-list-item-group>
           </v-list>
         </v-menu>
       </div>
-    </template>
+
+      <div class="ml-6">
+        <v-menu offset-y>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="indigo"
+              outlined
+              dark
+              v-bind="attrs"
+              v-on="on"
+            >
+              Meeting type
+              <v-icon class="ml-1">keyboard_arrow_down</v-icon>
+            </v-btn>
+          </template>
+
+          <v-list dense>
+            <v-list-item-group
+              v-model="groupByActiveId"
+              color="primary"
+            >
+              <v-list-item
+                v-for="(meetingType, index) in meetingTypes"
+                @click="filterMeetingType(meetingType)"
+                :key="index"
+              >
+                {{meetingType}}
+              </v-list-item>
+            </v-list-item-group>
+          </v-list>
+        </v-menu>
+      </div>
+    </div>
+
+    <div class="FilterMeeting-grouping ml-6">
+      <h4 class="mr-4">Group by:</h4>
+      <v-menu offset-y>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            color="indigo"
+            outlined
+            dark
+            v-bind="attrs"
+            v-on="on"
+          >
+            Choose
+            <v-icon class="ml-1">keyboard_arrow_down</v-icon>
+          </v-btn>
+        </template>
+
+        <v-list dense>
+          <v-list-item-group
+            v-model="groupByActiveId"
+            color="primary"
+          >
+            <v-list-item
+              @click="option.handleClick"
+              v-for="(option, index) in groupByOptions"
+              :key="index"
+            >
+              {{option.name}}
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+      </v-menu>
+    </div>
   </div>
 </template>
 
 <script>
   import moment from 'moment'
   import userRequest from '../service/modules/user'
+  import roomRequest from '../service/modules/room'
+  import meetingRequest from '../service/modules/meeting'
 
   export default {
     name: 'FilterMeeting',
@@ -175,18 +241,35 @@
     },
     data() {
       return {
-        defaultMeetings: this.meetings,
         hasMeeting: false,
         endMenu: false,
         startMenu: false,
         startDay: moment().format('YYYY-MM-DD'),
         endDay: moment().add(7, 'days').format('YYYY-MM-DD'),
+
+        roomNames: [],
+        meetingTypes: [],
         groupByActiveId: null,
         groupByOptions: [
           { name: 'Meeting Type', handleClick: this.groupByMeetingType },
           { name: 'Room name', handleClick: this.groupByRoomName },
-        ]
+        ],
+        defaultMeetings: this.meetings,
       }
+    },
+    created () {
+      roomRequest.getRoomsInfo().then(res => {
+        res.data.forEach(
+          room => this.roomNames.push(room.name)
+        )
+        this.roomNames.sort()
+      })
+      meetingRequest.getMeetingTypesInfo().then(res => {
+        res.data.forEach(
+          meetingType => this.meetingTypes.push(meetingType.type)
+        )
+        this.meetingTypes.sort()
+      })
     },
     methods: {
       getGroupByActivedId(name) {
@@ -240,8 +323,8 @@
         })
 
         const groupingMeetings = []
-        const roomNames = Object.keys(rooms).sort()
-        roomNames.forEach(roomName => {
+        this.roomNames = Object.keys(rooms).sort()
+        this.roomNames.forEach(roomName => {
           rooms[roomName].map(meeting => groupingMeetings.push(meeting))
         })
         this.updateMeetings(groupingMeetings)
@@ -256,6 +339,18 @@
         userRequest.getAllMeetingsOfUser({end_time: endDay})
           .then(res => this.updateMeetings(res.data))
       },
+      filterRoom(room) {
+        const filteringMeetings = this.defaultMeetings.filter(
+          userMeeting => userMeeting.meeting.room.name == room
+        )
+        this.updateMeetings(filteringMeetings)
+      },
+      filterMeetingType(meetingType) {
+        const filteringMeetings = this.defaultMeetings.filter(
+          userMeeting => userMeeting.meeting.meetingType.type === meetingType
+        )
+        this.updateMeetings(filteringMeetings)
+      }
     },
   }
 </script>
@@ -264,5 +359,18 @@
 .FilterMeeting {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+
+  &-filtering {
+    display: flex;
+    align-items: center;
+    flex-grow: 2;
+  }
+
+  &-grouping {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+  }
 }
 </style>

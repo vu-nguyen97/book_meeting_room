@@ -1,7 +1,14 @@
 import request from '../index'
 
 export default {
-  getMeeting(start_date) {
-    return request('get', '/room-list', { date: start_date })
+  getMeetingData(meeting_id) {
+    if (meeting_id) {
+      return request('get', `/room-list/${ meeting_id }`)
+    } else {
+      return request('get', '/room-list')
+    }
   },
+  getMeetingsByRooms(date) {
+    return request('get', '/room-list', { date })
+  }
 }

@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <div v-if="isShowSpinner" class="Spinner"></div>
+    <Spinner :isShowSpinner="isShowSpinner"></Spinner>
     <div v-if="!hasMeeting"
       class="u-textCenter mt-10"
     >
@@ -13,7 +13,7 @@
         :meetings="meetings"
       />
       <div v-if="meetings.length === 0"
-        class="u-textCenter u-noData mt-10"
+        class="u-textCenter u-noData mt-16"
       >
         No meeting in this time.
       </div>
@@ -56,6 +56,7 @@
 <script>
 import Card from './Card'
 import FilterMeeting from './FilterMeeting'
+import Spinner from './Spinner'
 import userRequest from '../service/modules/user'
 
 export default {
@@ -81,7 +82,8 @@ export default {
   },
   components: {
     Card,
-    FilterMeeting
+    FilterMeeting,
+    Spinner
   },
   watch: {
     page(newValue) {
@@ -139,44 +141,5 @@ export default {
 .u-noData {
   font-size: 1.2rem;
   font-style: oblique;
-}
-.Spinner {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  position: absolute;
-  border: 5px solid #eee;
-  display: inline-block;
-  
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  
-  &:after, &:before {
-    content: '';
-    display: block;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-  }
-  
-  &:after {
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    border: 5px solid transparent;
-    border-top-color: #928a8a;
-    animation: spin 1s linear infinite;
-  }
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  
-  100% {
-    transform: rotate(360deg);
-  }
 }
 </style>

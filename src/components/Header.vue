@@ -45,7 +45,7 @@
     },
     created () {
       const hashUrl = window.location.hash
-      const activePage = hashUrl.split('/').slice(-1)[0]
+      const activePage = hashUrl.split('/')[1]
       this.activePage = activePage ? activePage : 'home'
     },
     watch: {

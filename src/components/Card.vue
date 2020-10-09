@@ -117,13 +117,6 @@ import moment from 'moment'
 import userRequest from '../service/modules/user'
 import meetingRequest from '../service/modules/meeting'
 
-const MEETING_TYPES = {
-  1: "Meeting",
-  2: "Event",
-  3: "Birthday",
-  4: "Conference",
-  5: "Party",
-}
 const DEPARTMENTS = ['D2', 'D6', 'D9']
 
 export default {
@@ -137,7 +130,7 @@ export default {
   data() {
     return {
       options: ['Thêm thành viên'],
-      meetingName: MEETING_TYPES[this.meeting.meeting_type_id],
+      meetingName: this.meeting.meetingType.type,
       dialog: false,
       joinedUserIds: [],
       formatedUsers: [],
