@@ -32,7 +32,7 @@
                   >
                     <template v-slot:activator="{ on, attrs }">
                       <v-text-field
-                        v-model="startDay"
+                        v-model="filters.startDate"
                         class="mt-5"
                         label="Choose start day"
                         dense
@@ -44,7 +44,7 @@
                       ></v-text-field>
                     </template>
                     <v-date-picker
-                      v-model="startDay"
+                      v-model="filters.startDate"
                       no-title
                       scrollable
                     >
@@ -53,13 +53,6 @@
                         text
                         color="primary"
                         @click="startMenu = false"
-                      >
-                        Cancel
-                      </v-btn>
-                      <v-btn
-                        text
-                        color="primary"
-                        @click="filterByStartDay(startDay)"
                       >
                         OK
                       </v-btn>
@@ -78,7 +71,7 @@
                   >
                     <template v-slot:activator="{ on, attrs }">
                       <v-text-field
-                        v-model="endDay"
+                        v-model="filters.endDate"
                         class="mt-5"
                         label="Choose end day"
                         dense
@@ -90,7 +83,7 @@
                       ></v-text-field>
                     </template>
                     <v-date-picker
-                      v-model="endDay"
+                      v-model="filters.endDate"
                       no-title
                       scrollable
                     >
@@ -99,13 +92,6 @@
                         text
                         color="primary"
                         @click="endMenu = false"
-                      >
-                        Cancel
-                      </v-btn>
-                      <v-btn
-                        text
-                        color="primary"
-                        @click="filterByEndDay(endDay)"
                       >
                         OK
                       </v-btn>
@@ -135,12 +121,11 @@
 
           <v-list dense>
             <v-list-item-group
-              v-model="groupByActiveId"
+              v-model="filters.room"
               color="primary"
             >
               <v-list-item
                 v-for="(room, index) in roomNames"
-                @click="filterRoom(room)"
                 :key="index"
               >
                 {{room}}
@@ -167,12 +152,11 @@
 
           <v-list dense>
             <v-list-item-group
-              v-model="groupByActiveId"
+              v-model="filters.meetingType"
               color="primary"
             >
               <v-list-item
                 v-for="(meetingType, index) in meetingTypes"
-                @click="filterMeetingType(meetingType)"
                 :key="index"
               >
                 {{meetingType}}
@@ -183,8 +167,8 @@
       </div>
     </div>
 
-    <div class="FilterMeeting-grouping ml-6">
-      <h4 class="mr-4">Group by:</h4>
+    <div class="FilterMeeting-sorting ml-6">
+      <h4 class="mr-4">Sort by:</h4>
       <v-menu offset-y>
         <template v-slot:activator="{ on, attrs }">
           <v-btn
@@ -201,12 +185,12 @@
 
         <v-list dense>
           <v-list-item-group
-            v-model="groupByActiveId"
+            v-model="activedSortType"
             color="primary"
           >
             <v-list-item
               @click="option.handleClick"
-              v-for="(option, index) in groupByOptions"
+              v-for="(option, index) in sortByOptions"
               :key="index"
             >
               {{option.name}}
@@ -232,29 +216,62 @@
         type: Function
       },
     },
-    watch: {
-      groupByActiveId(newValue) {
-        if (newValue === undefined) {
-          this.updateMeetings(this.defaultMeetings)
-        }
-      }
-    },
     data() {
       return {
         hasMeeting: false,
         endMenu: false,
         startMenu: false,
-        startDay: moment().format('YYYY-MM-DD'),
-        endDay: moment().add(7, 'days').format('YYYY-MM-DD'),
 
         roomNames: [],
         meetingTypes: [],
-        groupByActiveId: null,
-        groupByOptions: [
-          { name: 'Meeting Type', handleClick: this.groupByMeetingType },
-          { name: 'Room name', handleClick: this.groupByRoomName },
+        activedSortType: null,
+        
+        filters: {
+          startDate: moment().format('YYYY-MM-DD'),
+          endDate: moment().add(7, 'days').format('YYYY-MM-DD'),
+          room: null,
+          meetingType: null
+        },
+        sortByOptions: [
+          { name: 'Meeting Type', handleClick: () => this.sortMeeting('Meeting Type') },
+          { name: 'Room name', handleClick: () => this.sortMeeting('Room name') },
         ],
-        defaultMeetings: this.meetings,
+        defaultMeetings: this.meetings
+      }
+    },
+    watch: {
+      activedSortType(newValue) {
+        if (newValue === undefined) {
+          this.sortMeeting()
+        }
+      },
+      filters: {
+        deep: true,
+        async handler(val) {
+          let filteredMeetings = this.defaultMeetings
+          if (
+            val.startDate != moment().format('YYYY-MM-DD') ||
+            val.endDate != moment().add(7, 'days').format('YYYY-MM-DD')
+          ) {
+            await userRequest.getAllMeetingsOfUser({ start_time: val.startDate, end_time: val.endDate })
+              .then(res => filteredMeetings = res.data)
+          }
+          if (typeof val.room == "number") {
+            filteredMeetings = filteredMeetings.filter(userMeeting => {
+              if (userMeeting.meeting) {
+                return userMeeting.meeting.room.name == this.roomNames[val.room]
+              }
+            })
+          }
+          if (typeof val.meetingType == "number") {
+            filteredMeetings = filteredMeetings.filter(userMeeting => {
+              if (userMeeting.meeting) {
+                return userMeeting.meeting.meetingType.type == this.meetingTypes[val.meetingType]
+              }
+            })
+          }
+          this.sortMeeting('', filteredMeetings)
+        }
       }
     },
     created () {
@@ -270,87 +287,55 @@
         )
         this.meetingTypes.sort()
       })
+      this.sortMeeting()
     },
     methods: {
-      getGroupByActivedId(name) {
-        this.groupByOptions.forEach((option, index) => {
+      setActivedSortType(name) {
+        this.sortByOptions.forEach((option, index) => {
           if (option.name == name) {
-            this.groupByActiveId = index
+            this.activedSortType = index
           }
         })
       },
-      groupByMeetingType() {
-        this.getGroupByActivedId('Meeting Type')
-        let meetings = {}
+      sortMeeting(sortName, filteredMeetings) {
+        let fieldData = null
+        if (sortName == 'Meeting Type') {
+          fieldData = this.meetingTypes
+        } else if (sortName == 'Room name') {
+          fieldData = this.roomNames
+        } else {
+          let userMeetings = filteredMeetings || this.meetings
+          userMeetings.sort((userMeeting1, userMeeting2) => 
+            userMeeting1.meeting.start_time > userMeeting2.meeting.start_time ? 1 : -1
+          )
+          return this.updateMeetings(userMeetings)
+        }
+
+        let meetingMap = {}
+        fieldData.forEach(field => {
+          meetingMap = Object.assign({}, meetingMap, {
+            [field]: []
+          })
+        })
+
         this.meetings.forEach(userMeeting => {
-          const meetingTypeId = userMeeting.meeting.meeting_type_id
-
-          if (Object.keys(meetings).indexOf(meetingTypeId.toString()) == -1) {
-            const groupingMeeting = []
-            groupingMeeting.push(userMeeting)
-
-            meetings = Object.assign({}, meetings, {
-              [meetingTypeId]: [...groupingMeeting]
-            })
+          let field_name = null
+          if (sortName == 'Meeting Type') {
+            field_name = userMeeting.meeting.meetingType.type
           } else {
-            meetings[meetingTypeId].push(userMeeting)
+            field_name = userMeeting.meeting.room.name
           }
+          meetingMap[field_name].push(userMeeting)
         })
 
-        const groupingMeetings = []
-        const meetingTypes = Object.keys(meetings).sort()
-        meetingTypes.forEach(meetingTypeId => {
-          meetings[meetingTypeId].map(meeting => groupingMeetings.push(meeting))
+        const sortingMeetings = []
+        Object.values(meetingMap).forEach(meeting_arr => {
+          if (meeting_arr.length == 0) { return }
+          meeting_arr.forEach(userMeeting => sortingMeetings.push(userMeeting))
         })
-        this.updateMeetings(groupingMeetings)
+        this.updateMeetings(sortingMeetings)
+        this.setActivedSortType(sortName)
       },
-      groupByRoomName() {
-        this.getGroupByActivedId('Room name')
-        let rooms = {}
-        this.meetings.forEach(userMeeting => {
-          const roomName = userMeeting.meeting.room.name
-
-          if (Object.keys(rooms).indexOf(roomName) === -1) {
-            const groupingMeeting = []
-            groupingMeeting.push(userMeeting)
-
-            rooms = Object.assign({}, rooms, {
-              [roomName]: [...groupingMeeting]
-            })
-          } else {
-            rooms[roomName].push(userMeeting)
-          }
-        })
-
-        const groupingMeetings = []
-        this.roomNames = Object.keys(rooms).sort()
-        this.roomNames.forEach(roomName => {
-          rooms[roomName].map(meeting => groupingMeetings.push(meeting))
-        })
-        this.updateMeetings(groupingMeetings)
-      },
-      filterByStartDay(startDay) {
-        this.$refs.startMenu.save(startDay)
-        userRequest.getAllMeetingsOfUser({start_time: startDay})
-          .then(res => this.updateMeetings(res.data))
-      },
-      filterByEndDay(endDay) {
-        this.$refs.endMenu.save(endDay)
-        userRequest.getAllMeetingsOfUser({end_time: endDay})
-          .then(res => this.updateMeetings(res.data))
-      },
-      filterRoom(room) {
-        const filteringMeetings = this.defaultMeetings.filter(
-          userMeeting => userMeeting.meeting.room.name == room
-        )
-        this.updateMeetings(filteringMeetings)
-      },
-      filterMeetingType(meetingType) {
-        const filteringMeetings = this.defaultMeetings.filter(
-          userMeeting => userMeeting.meeting.meetingType.type === meetingType
-        )
-        this.updateMeetings(filteringMeetings)
-      }
     },
   }
 </script>
@@ -364,13 +349,13 @@
   &-filtering {
     display: flex;
     align-items: center;
-    flex-grow: 2;
+    flex-grow: 1;
   }
 
-  &-grouping {
+  &-sorting {
     display: flex;
     align-items: center;
-    flex-grow: 1;
+    flex-grow: 2;
   }
 }
 </style>

@@ -259,8 +259,8 @@
         let isDisable = true
         const meeting_type_id = this.meetingTypes.indexOf(this.activedType) + 1
         const room_id = this.getRoomId()
-        const startTime = moment(this.meeting.start_time).format('hh:mm')
-        const endTime = moment(this.meeting.end_time).format('hh:mm')
+        const startTime = moment(this.meeting.start_time).format('HH:mm')
+        const endTime = moment(this.meeting.end_time).format('HH:mm')
         const dayTime = moment(this.meeting.start_time).format('YYYY-MM-DD')
 
         if (
@@ -299,8 +299,8 @@
               }
             })
 
-            this.startTime = moment(meeting.start_time).format('hh:mm')
-            this.endTime = moment(meeting.end_time).format('hh:mm')
+            this.startTime = moment(meeting.start_time).format('HH:mm')
+            this.endTime = moment(meeting.end_time).format('HH:mm')
             this.selectedRoom = meeting.room.name
             this.meetingDay = moment(meeting.start_time).format('YYYY-MM-DD')
             this.meeting = meeting
@@ -319,16 +319,18 @@
           end_time: `${this.meetingDay} ${this.endTime}:00`,
           room_id: room_id
         })
-          .then(() => {
-            this.events.push({ 
-              name: this.activedType,
-              start: `${this.meetingDay} ${this.startTime}:00`,
-              end: `${this.meetingDay} ${this.endTime}:00`,
-              color: this.colors[meeting_type_id - 1],
-              category: this.selectedRoom,
-            })
-            this.$store.dispatch('setAlertAsync', {type: 'info', message: 'Add meeting success!'})
-            this.resetForm()
+          .then((res) => {
+            if(res) {
+              this.events.push({ 
+                name: this.activedType,
+                start: `${this.meetingDay} ${this.startTime}:00`,
+                end: `${this.meetingDay} ${this.endTime}:00`,
+                color: this.colors[meeting_type_id - 1],
+                category: this.selectedRoom,
+              })
+              this.$store.dispatch('setAlertAsync', {type: 'info', message: 'Add meeting success!'})
+              this.resetForm()
+            }
           })
       },
       onEditMeeting () {

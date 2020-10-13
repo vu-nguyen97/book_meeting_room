@@ -83,4 +83,7 @@
       color: darken(#007bff, 25) !important;
     }
   }
+  .v-app-bar {
+    z-index: 10 !important;
+  }
 </style>

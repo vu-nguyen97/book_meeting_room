@@ -88,6 +88,9 @@ export default {
   watch: {
     page(newValue) {
       this.pagniatePage(newValue)
+    },
+    meetings() {
+      this.colorForCard()
     }
   },
   methods: {
@@ -111,15 +114,8 @@ export default {
       this.totalPage = Math.ceil(this.meetings.length / this.totalMeetingInAPage)
       this.page = 1
       this.pagniatePage(this.page)
-    }
-  },
-  created () {
-    userRequest.getAllMeetingsOfUser()
-    .then((res) => {
-      const userMeetings = res.data
-      this.hasMeeting = userMeetings.length > 0 ? true : false
-      this.updateMeetings(userMeetings)
-
+    },
+    colorForCard() {
       const totalMeeting = this.meetings.length
       const totalBaseColors = Object.keys(this.colors).length;
       if (totalMeeting > totalBaseColors) {
@@ -130,7 +126,15 @@ export default {
           });
         }
       }
-
+    }
+  },
+  created () {
+    userRequest.getAllMeetingsOfUser()
+    .then((res) => {
+      const userMeetings = res.data
+      this.hasMeeting = userMeetings.length > 0 ? true : false
+      this.updateMeetings(userMeetings)
+      this.colorForCard()
       this.isShowSpinner = false
     })
   },
