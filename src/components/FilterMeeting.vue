@@ -212,6 +212,7 @@
     name: 'FilterMeeting',
     props: {
       meetings: Array,
+      defaultMeetings: Array,
       updateMeetings: {
         type: Function
       },
@@ -236,7 +237,6 @@
           { name: 'Meeting Type', handleClick: () => this.sortMeeting('Meeting Type') },
           { name: 'Room name', handleClick: () => this.sortMeeting('Room name') },
         ],
-        defaultMeetings: this.meetings
       }
     },
     watch: {

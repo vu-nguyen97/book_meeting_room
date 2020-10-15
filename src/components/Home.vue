@@ -4,6 +4,7 @@
     <FilterMeeting
       :updateMeetings="updateMeetings"
       :meetings="meetings"
+      :defaultMeetings="defaultMeetings"
     />
 
     <div v-if="!hasMeeting"
@@ -72,6 +73,7 @@ export default {
         4: '#6a18e2',
       },
       meetings: [],
+      defaultMeetings: null,
       hasMeeting: false,
       isShowSpinner: true,
 
@@ -104,7 +106,7 @@ export default {
       }
       this.meetingsByPage = this.meetings.slice(start, end)
     },
-    updateMeetings(userMeetings) {
+    updateMeetings(userMeetings, isDefault = false) {
       const meetings = []
       userMeetings.map(userMeeting => {
         if (userMeeting.meeting != null) {
@@ -112,6 +114,9 @@ export default {
         }
       })
       this.meetings = [...meetings]
+      if (isDefault) {
+        this.defaultMeetings = this.meetings
+      }
       this.totalPage = Math.ceil(this.meetings.length / this.totalMeetingInAPage)
       this.page = 1
       this.pagniatePage(this.page)
@@ -134,7 +139,7 @@ export default {
     .then((res) => {
       const userMeetings = res.data
       this.hasMeeting = userMeetings.length > 0 ? true : false
-      this.updateMeetings(userMeetings)
+      this.updateMeetings(userMeetings, true)
       this.colorForCard()
       this.isShowSpinner = false
     })
