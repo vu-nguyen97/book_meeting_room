@@ -1,17 +1,18 @@
 <template>
   <v-container>
     <Spinner :isShowSpinner="isShowSpinner"></Spinner>
+    <FilterMeeting
+      :updateMeetings="updateMeetings"
+      :meetings="meetings"
+    />
+
     <div v-if="!hasMeeting"
-      class="u-textCenter mt-10"
+      class="u-textCenter mt-10 pa-10"
     >
       You haven't meeting at the moment.
     </div>
 
     <div v-else>
-      <FilterMeeting
-        :updateMeetings="updateMeetings"
-        :meetings="meetings"
-      />
       <div v-if="meetings.length === 0"
         class="u-textCenter u-noData mt-16"
       >
