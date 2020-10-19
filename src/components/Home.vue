@@ -92,7 +92,8 @@ export default {
     page(newValue) {
       this.pagniatePage(newValue)
     },
-    meetings() {
+    meetings(newValue) {
+      this.hasMeeting = newValue.length == 0 ? false : true
       this.colorForCard()
     }
   },

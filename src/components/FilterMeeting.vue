@@ -253,8 +253,8 @@
             val.startDate != moment().format('YYYY-MM-DD') ||
             val.endDate != moment().add(7, 'days').format('YYYY-MM-DD')
           ) {
-            await userRequest.getAllMeetingsOfUser({ start_time: val.startDate, end_time: val.endDate })
-              .then(res => filteredMeetings = res.data)
+            const responseData = await userRequest.getAllMeetingsOfUser({ start_time: val.startDate, end_time: val.endDate })
+            filteredMeetings = responseData.data
           }
           if (typeof val.room == "number") {
             filteredMeetings = filteredMeetings.filter(userMeeting => {
