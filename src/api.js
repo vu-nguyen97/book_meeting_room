@@ -13,7 +13,7 @@ api.defaults.timeout = 10000
 
 api.interceptors.request.use(
   config => {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.common['Authorization'] = `Bearer ${token}`;
     }
@@ -46,6 +46,7 @@ api.interceptors.response.use(
 
         case 401:
           {
+            localStorage.removeItem('access_token')
             alert("session expired");
             store.dispatch('logoutAsync')
             router.push({

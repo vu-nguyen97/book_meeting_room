@@ -26,8 +26,8 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    logoutAsync({commit}, payload) {
-      commit('logout', payload);
+    logoutAsync({commit}) {
+      commit('logout');
     },
     setAlertAsync({commit}, payload) {
       commit('setAlert', payload);
