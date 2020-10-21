@@ -23,7 +23,7 @@
                 autocomplete="on"
               >
             </div>
-            <div v-if="errorRequest" class="errorRequest u-width100">
+            <div v-if="errorRequest" class="u-textError u-width100">
               <i class="fas fa-exclamation-circle"></i>  
               {{errorRequest}}
             </div>
@@ -48,27 +48,27 @@ export default {
   props: {
     msg: String,
   },
+  computed: {
+    errorRequest() {
+      return this.$store.state.alert
+    }
+  },
   methods: {
     loginRequest() {
       request.login(this.email, this.password)
       .then((res) => {
-        const user = res.data
-        localStorage.setItem('access_token', user.token)
-
-        this.$store.commit('login', user)
-        this.$router.push({ name: 'home', path: '/home' })
-      }, (err) => {
-        this.errorRequest = JSON.parse(err.request.responseText)[0].message
+        if(res) {
+          const user = res.data
+          localStorage.setItem('access_token', user.token)
+  
+          this.$store.commit('login', user)
+          this.$router.push({ name: 'home', path: '/home' })
+        }
       })
     },
   },
   data() {
     return {
-      rules: [
-        value => !!value || 'Required.',
-        value => (value && value.length >= 3) || 'Min 3 characters',
-      ],
-      errorRequest: '',
       email: '',
       password: ''
     }
@@ -139,9 +139,10 @@ export default {
     }
   }
 
-  .errorRequest {
+  .u-textError {
     color: red;
     font-size: 0.77rem;
+    margin-top: -0.8rem;
   }
 
   .custom-fa {
